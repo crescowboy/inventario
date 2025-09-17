@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,55 +8,58 @@ import { useToast } from "@/hooks/use-toast";
 import { Package, Shield } from "lucide-react";
 import { useState } from "react";
 
+type UserRole = 'empleado' | 'jefe' | 'admin';
+
+interface UserData {
+  name: string;
+  role: UserRole;
+}
+
 interface LoginPageProps {
-  onLogin: (userData: { username: string; role: 'empleado' | 'jefe' }) => void;
+  onLogin: (userData: UserData) => void;
 }
 
 const LoginPage = ({ onLogin }: LoginPageProps) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
-  // Default credentials stored in localStorage simulation
-  const defaultCredentials = {
-    admin: { password: "admin123", role: "jefe" as const },
-    empleado: { password: "emp123", role: "empleado" as const },
-    jefe: { password: "jefe123", role: "jefe" as const }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate login validation
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const user = defaultCredentials[username as keyof typeof defaultCredentials];
-    
-    if (user && user.password === password) {
-      // Store session in localStorage
-      localStorage.setItem('inventorySession', JSON.stringify({
-        username,
-        role: user.role,
-        loginTime: new Date().toISOString()
-      }));
-
-      toast({
-        title: "¡Bienvenido!",
-        description: `Acceso autorizado como ${user.role}`,
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      onLogin({ username, role: user.role });
-    } else {
+      const data = await response.json();
+
+      if (response.ok) {
+        const userData = data.user as UserData;
+        
+        onLogin(userData);
+      } else {
+        toast({
+          title: "Error de acceso",
+          description: data.message || "Credenciales incorrectas.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Error de acceso",
-        description: "Usuario o contraseña incorrectos",
+        title: "Error de red",
+        description: "No se pudo conectar con el servidor. Inténtalo de nuevo.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -88,13 +90,13 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Usuario</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Ingresa tu usuario"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="ej: admin@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   className="transition-all duration-200 focus:scale-[1.02]"
                 />
@@ -123,9 +125,9 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground mb-2">Credenciales de prueba:</p>
               <div className="text-xs space-y-1 bg-muted/50 p-3 rounded-lg">
-                <div><strong>Admin:</strong> admin / admin123</div>
-                <div><strong>Jefe:</strong> jefe / jefe123</div>
-                <div><strong>Empleado:</strong> empleado / emp123</div>
+                <div><strong>Admin:</strong> admin@gmail.com / admin</div>
+                <div><strong>Jefe:</strong> jefe@gmail.com / jefe</div>
+                <div><strong>Empleado:</strong> empleado@gmail.com / empleado</div>
               </div>
             </div>
           </CardContent>

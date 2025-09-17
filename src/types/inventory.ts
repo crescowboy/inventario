@@ -6,7 +6,7 @@ export interface Article {
   units: number;
   price: number;
   reference: string;
-  sectionId?: string;
+  section: string;
   createdAt: string;
   updatedAt: string;
 }

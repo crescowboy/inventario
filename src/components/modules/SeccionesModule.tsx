@@ -8,11 +8,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FolderOpen, Plus, Search, Edit, Trash2, Package } from "lucide-react";
+import { FolderOpen, Plus, Search, Edit, Trash2, Package, MoreHorizontal } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 import { formatCurrency, Article } from "@/types/inventory";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import ArticleForm from "./ArticleForm"; 
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const SeccionesModule = () => {
   const [selectedSection, setSelectedSection] = useState<string>("");
@@ -20,15 +27,8 @@ const SeccionesModule = () => {
   const [newSectionName, setNewSectionName] = useState("");
   const [newSectionDescription, setNewSectionDescription] = useState("");
   const [showNewSectionDialog, setShowNewSectionDialog] = useState(false);
-  const [showNewArticleDialog, setShowNewArticleDialog] = useState(false);
-  const [newArticle, setNewArticle] = useState({
-    code: "",
-    name: "",
-    brand: "",
-    units: 0,
-    price: 0,
-    reference: "",
-  });
+  const [isFormOpen, setIsFormOpen] = useState(false); 
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null); 
 
   const { 
     sections, 
@@ -45,7 +45,7 @@ const SeccionesModule = () => {
 
   const currentSection = sections.find(s => s.id === selectedSection);
   const sectionArticles = selectedSection 
-    ? articles.filter(a => a.sectionId === selectedSection)
+    ? articles.filter(a => a.section === selectedSection)
     : [];
   
   const searchResults = searchQuery.trim() && selectedSection 
@@ -77,45 +77,14 @@ const SeccionesModule = () => {
     setShowNewSectionDialog(false);
   };
 
-  const handleCreateArticle = () => {
-    if (!newArticle.code || !newArticle.name) {
-      toast({
-        title: "Error",
-        description: "Código y nombre son requeridos",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleAddNewArticle = () => {
+    setSelectedArticle(null);
+    setIsFormOpen(true);
+  };
 
-    const existingArticle = articles.find(a => a.code === newArticle.code);
-    if (existingArticle) {
-      toast({
-        title: "Error",
-        description: "Ya existe un artículo con ese código",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    addArticle({
-      ...newArticle,
-      sectionId: selectedSection,
-    });
-
-    toast({
-      title: "Artículo agregado",
-      description: `${newArticle.name} ha sido agregado a la sección`,
-    });
-
-    setNewArticle({
-      code: "",
-      name: "",
-      brand: "",
-      units: 0,
-      price: 0,
-      reference: "",
-    });
-    setShowNewArticleDialog(false);
+  const handleEditArticle = (article: Article) => {
+    setSelectedArticle(article);
+    setIsFormOpen(true);
   };
 
   const handleDeleteSection = (sectionId: string, sectionName: string) => {
@@ -131,13 +100,26 @@ const SeccionesModule = () => {
     }
   };
 
-  const handleDeleteArticle = (article: Article) => {
-    if (window.confirm(`¿Estás seguro de eliminar "${article.name}"?`)) {
-      deleteArticle(article.id);
-      toast({
-        title: "Artículo eliminado",
-        description: `${article.name} ha sido eliminado`,
-      });
+  const handleDeleteArticle = async (articleId: string, articleName: string) => {
+    if (confirm(`¿Estás seguro de que quieres eliminar el artículo "${articleName}"?`)) {
+      try {
+        await deleteArticle(articleId);
+        toast({ title: "Artículo eliminado", description: "El artículo ha sido eliminado correctamente." });
+      } catch (error: any) {
+        toast({ title: "Error al eliminar", description: error.message, variant: "destructive" });
+      }
+    }
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    if (selectedArticle) {
+      // Es una edición
+      await updateArticle(selectedArticle.id, data);
+      toast({ title: "Artículo actualizado", description: "El artículo ha sido actualizado correctamente." });
+    } else {
+      // Es una creación
+      await addArticle({ ...data, section: selectedSection });
+      toast({ title: "Artículo agregado", description: "El artículo ha sido agregado correctamente." });
     }
   };
 
@@ -248,7 +230,6 @@ const SeccionesModule = () => {
           </CardContent>
         </Card>
 
-        {/* Section Content */}
         <div className="lg:col-span-2">
           {!selectedSection ? (
             <Card className="shadow-sm">
@@ -269,86 +250,10 @@ const SeccionesModule = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{currentSection?.name}</span>
-                    <Dialog open={showNewArticleDialog} onOpenChange={setShowNewArticleDialog}>
-                      <DialogTrigger asChild>
-                        <Button size="sm">
-                          <Plus className="w-4 h-4 mr-1" />
-                          Agregar Artículo
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Agregar Artículo a {currentSection?.name}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="article-code">Código</Label>
-                              <Input
-                                id="article-code"
-                                value={newArticle.code}
-                                onChange={(e) => setNewArticle(prev => ({ ...prev, code: e.target.value }))}
-                                placeholder="Código único"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="article-name">Nombre</Label>
-                              <Input
-                                id="article-name"
-                                value={newArticle.name}
-                                onChange={(e) => setNewArticle(prev => ({ ...prev, name: e.target.value }))}
-                                placeholder="Nombre del artículo"
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="article-brand">Marca</Label>
-                              <Input
-                                id="article-brand"
-                                value={newArticle.brand}
-                                onChange={(e) => setNewArticle(prev => ({ ...prev, brand: e.target.value }))}
-                                placeholder="Marca"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="article-reference">Referencia</Label>
-                              <Input
-                                id="article-reference"
-                                value={newArticle.reference}
-                                onChange={(e) => setNewArticle(prev => ({ ...prev, reference: e.target.value }))}
-                                placeholder="Referencia"
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="article-units">Unidades</Label>
-                              <Input
-                                id="article-units"
-                                type="number"
-                                value={newArticle.units}
-                                onChange={(e) => setNewArticle(prev => ({ ...prev, units: parseInt(e.target.value) || 0 }))}
-                                placeholder="0"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="article-price">Precio</Label>
-                              <Input
-                                id="article-price"
-                                type="number"
-                                value={newArticle.price}
-                                onChange={(e) => setNewArticle(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                                placeholder="0"
-                              />
-                            </div>
-                          </div>
-                          <Button onClick={handleCreateArticle} className="w-full">
-                            Agregar Artículo
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Button size="sm" onClick={handleAddNewArticle}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      Agregar Artículo
+                    </Button>
                   </CardTitle>
                   <CardDescription>
                     {currentSection?.description || 'Gestiona los artículos de esta sección'}
@@ -427,14 +332,13 @@ const SeccionesModule = () => {
                                 {article.reference || '-'}
                               </TableCell>
                               <TableCell className="text-right">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDeleteArticle(article)}
-                                  className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditArticle(article)} className="gap-2"><Edit className="w-4 h-4"/> Editar</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDeleteArticle(article.id, article.name)} className="gap-2 text-destructive focus:text-destructive"><Trash2 className="w-4 h-4"/> Eliminar</DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -448,6 +352,14 @@ const SeccionesModule = () => {
           )}
         </div>
       </div>
+
+      <ArticleForm 
+        isOpen={isFormOpen} 
+        onOpenChange={setIsFormOpen} 
+        onSubmit={handleFormSubmit} 
+        initialData={selectedArticle} 
+        sections={sections}
+      />
     </div>
   );
 };

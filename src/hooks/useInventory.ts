@@ -1,227 +1,132 @@
-import { useState, useEffect } from 'react';
-import { Article, Section, RecentActivity, InventoryState } from '@/types/inventory';
+import { useState, useEffect, useCallback } from 'react';
+import { Article, Section } from '@/types/inventory';
+import { useToast } from './use-toast';
 
-const STORAGE_KEY = 'inventory_data';
+// Helper para transformar los datos del backend (_id) al formato del frontend (id)
+const transformApiResponse = (data: any[]) => {
+  return data.map(item => {
+    const { _id, section, ...rest } = item;
+    const transformedItem: any = { id: _id, ...rest };
+    if (section && typeof section === 'object' && section._id) {
+      transformedItem.section = section._id; // Assuming section is populated and has _id
+    } else if (section) {
+      transformedItem.section = section; // If section is just the ID string
+    }
+    return transformedItem;
+  });
+};
 
 export const useInventory = () => {
-  const [state, setState] = useState<InventoryState>({
-    articles: [],
-    sections: [],
-    recentActivities: [],
-  });
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]); // Estado para actividades recientes
+  const { toast } = useToast();
 
-  // Load data from localStorage on mount
-  useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setState(parsed);
-      } catch (error) {
-        console.error('Error loading inventory data:', error);
+  const fetchData = useCallback(async () => {
+    // No recargar si ya está cargando
+    if (!loading) setLoading(true);
+    try {
+      const [articlesRes, sectionsRes] = await Promise.all([
+        fetch('/api/inventory'),
+        fetch('/api/sections'),
+      ]);
+
+      if (!articlesRes.ok || !sectionsRes.ok) {
+        throw new Error('Error al obtener los datos del servidor.');
       }
-    }
-  }, []);
 
-  // Save data to localStorage whenever state changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+      const articlesData = await articlesRes.json();
+      const sectionsData = await sectionsRes.json();
 
-  const addRecentActivity = (activity: Omit<RecentActivity, 'id' | 'timestamp'>) => {
-    const newActivity: RecentActivity = {
-      ...activity,
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-    };
-
-    setState(prev => ({
-      ...prev,
-      recentActivities: [newActivity, ...prev.recentActivities.slice(0, 49)], // Keep only last 50
-    }));
-  };
-
-  const addArticle = (articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newArticle: Article = {
-      ...articleData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setState(prev => ({
-      ...prev,
-      articles: [...prev.articles, newArticle],
-    }));
-
-    addRecentActivity({
-      articleCode: newArticle.code,
-      articleName: newArticle.name,
-      action: 'created',
-      details: `Agregado a ${articleData.sectionId ? 'sección específica' : 'inventario general'}`,
-    });
-
-    return newArticle;
-  };
-
-  const updateArticle = (articleId: string, updates: Partial<Article>) => {
-    setState(prev => ({
-      ...prev,
-      articles: prev.articles.map(article =>
-        article.id === articleId
-          ? { ...article, ...updates, updatedAt: new Date().toISOString() }
-          : article
-      ),
-    }));
-
-    const article = state.articles.find(a => a.id === articleId);
-    if (article) {
-      addRecentActivity({
-        articleCode: article.code,
-        articleName: article.name,
-        action: 'updated',
-        details: 'Información actualizada',
-      });
-    }
-  };
-
-  const deleteArticle = (articleId: string) => {
-    const article = state.articles.find(a => a.id === articleId);
-    
-    setState(prev => ({
-      ...prev,
-      articles: prev.articles.filter(a => a.id !== articleId),
-    }));
-
-    if (article) {
-      addRecentActivity({
-        articleCode: article.code,
-        articleName: article.name,
-        action: 'deleted',
-        details: 'Artículo eliminado',
-      });
-    }
-  };
-
-  const addSection = (sectionData: Omit<Section, 'id' | 'createdAt' | 'articles'>) => {
-    const newSection: Section = {
-      ...sectionData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      articles: [],
-    };
-
-    setState(prev => ({
-      ...prev,
-      sections: [...prev.sections, newSection],
-    }));
-
-    return newSection;
-  };
-
-  const updateSection = (sectionId: string, updates: Partial<Section>) => {
-    setState(prev => ({
-      ...prev,
-      sections: prev.sections.map(section =>
-        section.id === sectionId ? { ...section, ...updates } : section
-      ),
-    }));
-  };
-
-  const deleteSection = (sectionId: string) => {
-    setState(prev => ({
-      ...prev,
-      sections: prev.sections.filter(s => s.id !== sectionId),
-      articles: prev.articles.map(article =>
-        article.sectionId === sectionId
-          ? { ...article, sectionId: undefined }
-          : article
-      ),
-    }));
-  };
-
-  const bulkAddArticles = (articlesData: string) => {
-    const lines = articlesData.trim().split('\n');
-    const addedArticles: Article[] = [];
-    const updatedArticles: Article[] = [];
-
-    lines.forEach(line => {
-      const parts = line.split(/\t|,/).map(part => part.trim());
-      if (parts.length >= 5) {
-        const [code, name, brand, unitsStr, priceStr, reference = ''] = parts;
-        const units = parseInt(unitsStr) || 0;
-        const price = parseFloat(priceStr) || 0;
-
-        // Check if article exists
-        const existingArticle = state.articles.find(a => a.code === code);
-        
-        if (existingArticle) {
-          updateArticle(existingArticle.id, {
-            name,
-            brand,
-            units,
-            price,
-            reference,
-          });
-          updatedArticles.push(existingArticle);
-        } else {
-          const newArticle = addArticle({
-            code,
-            name,
-            brand,
-            units,
-            price,
-            reference,
-          });
-          addedArticles.push(newArticle);
-        }
-      }
-    });
-
-    return { addedArticles, updatedArticles };
-  };
-
-  const searchArticles = (query: string, sectionId?: string) => {
-    if (!query.trim()) return [];
-
-    const searchTerms = query.toLowerCase().split(' ');
-    let articlesToSearch = state.articles;
-
-    if (sectionId) {
-      articlesToSearch = state.articles.filter(a => a.sectionId === sectionId);
-    }
-
-    return articlesToSearch.filter(article => {
-      const searchableText = `${article.code} ${article.name} ${article.brand} ${article.reference}`.toLowerCase();
+      setArticles(transformApiResponse(articlesData));
+      setSections(transformApiResponse(sectionsData));
       
-      return searchTerms.every(term => {
-        // Exact match
-        if (searchableText.includes(term)) return true;
-        
-        // Abbreviation matching (e.g., "cb" matches "cable")
-        const words = searchableText.split(' ');
-        return words.some(word => {
-          if (word.startsWith(term)) return true;
-          // Check if term could be an abbreviation
-          if (term.length <= 3) {
-            const wordAbbrev = word.split('').slice(0, term.length).join('');
-            return wordAbbrev === term;
-          }
-          return false;
-        });
+      setError(null);
+    } catch (err: any) {
+      const errorMessage = err.message || "Ocurrió un error inesperado";
+      setError(errorMessage);
+      toast({ title: "Error de Carga", description: errorMessage, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]); // `loading` no es necesaria como dependencia aquí
+
+  useEffect(() => {
+    fetchData();
+  }, []); // Solo se ejecuta una vez al montar el hook
+
+  const makeApiCall = async (url: string, method: string, body?: any, successMessage?: string) => {
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
       });
-    });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error en la operación ${method}`);
+      }
+      
+      if (successMessage) {
+        toast({ title: "Éxito", description: successMessage });
+      }
+
+      await fetchData(); // Refrescar los datos después de cada operación exitosa
+      return await response.json();
+    } catch (err: any) {
+      toast({ title: "Error en la operación", description: err.message, variant: "destructive" });
+      throw err; // Lanzar el error para que el componente que llama pueda manejarlo si es necesario
+    }
+  };
+
+  // --- Funciones de Sección ---
+  const addSection = (data: { name: string; description?: string }) => 
+    makeApiCall('/api/sections', 'POST', data, 'Sección creada exitosamente.');
+
+  const updateSection = (id: string, data: { name: string; description?: string }) => 
+    makeApiCall(`/api/sections/${id}`, 'PUT', data, 'Sección actualizada exitosamente.');
+
+  const deleteSection = (id: string) => 
+    makeApiCall(`/api/sections/${id}`, 'DELETE', undefined, 'Sección eliminada exitosamente.');
+
+  // --- Funciones de Artículo ---
+  const addArticle = (data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) => 
+    makeApiCall('/api/inventory', 'POST', data, 'Artículo creado exitosamente.');
+
+  const updateArticle = (id: string, data: Partial<Omit<Article, 'id'>>) => 
+    makeApiCall(`/api/inventory/${id}`, 'PUT', data, 'Artículo actualizado exitosamente.');
+
+  const deleteArticle = (id: string) => 
+    makeApiCall(`/api/inventory/${id}`, 'DELETE', undefined, 'Artículo eliminado exitosamente.');
+
+  // La búsqueda se mantiene en el cliente para una respuesta instantánea
+  const searchArticles = (query: string, sectionId: string): Article[] => {
+    const lowercasedQuery = query.toLowerCase();
+    return articles.filter(
+      (article) =>
+        article.sectionId === sectionId &&
+        (article.name.toLowerCase().includes(lowercasedQuery) ||
+          article.code.toLowerCase().includes(lowercasedQuery) ||
+          (article.brand && article.brand.toLowerCase().includes(lowercasedQuery)))
+    );
   };
 
   return {
-    ...state,
+    articles,
+    sections,
+    loading,
+    error,
     addArticle,
     updateArticle,
     deleteArticle,
     addSection,
     updateSection,
     deleteSection,
-    bulkAddArticles,
     searchArticles,
+    refetch: fetchData,
+    recentActivities, // Devolver las actividades recientes
   };
 };

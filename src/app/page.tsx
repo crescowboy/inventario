@@ -10,8 +10,8 @@ import SeccionesModule from "@/components/modules/SeccionesModule";
 import RecientesModule from "@/components/modules/RecientesModule";
 
 interface UserSession {
-  username: string;
-  role: 'empleado' | 'jefe';
+  name: string;
+  role: 'empleado' | 'jefe' | 'admin';
   loginTime: string;
 }
 
@@ -35,11 +35,12 @@ const Index = () => {
     setLoading(false);
   }, []);
 
-  const handleLogin = (userData: { username: string; role: 'empleado' | 'jefe' }) => {
+  const handleLogin = (userData: { name: string; role: 'empleado' | 'jefe' | 'admin' }) => {
     const newSession: UserSession = {
       ...userData,
       loginTime: new Date().toISOString(),
     };
+    localStorage.setItem('inventorySession', JSON.stringify(newSession));
     setSession(newSession);
   };
 
@@ -47,6 +48,8 @@ const Index = () => {
     localStorage.removeItem('inventorySession');
     setSession(null);
     setCurrentModule('empleado');
+    // Limpiar la cookie de sesión del servidor
+    fetch('/api/auth/logout', { method: 'POST' });
   };
 
   const renderModule = () => {
@@ -88,7 +91,7 @@ const Index = () => {
         onModuleChange={setCurrentModule}
         onLogout={handleLogout}
         userRole={session.role}
-        username={session.username}
+        username={session.name}
       />
       
       {/* Main Content */}
