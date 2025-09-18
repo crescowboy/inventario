@@ -182,7 +182,7 @@ const SeccionesModule = () => {
               </Dialog>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-2 max-h-[400px] overflow-y-auto">
             {sections.length === 0 ? (
               <div className="text-center py-4">
                 <FolderOpen className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-50" />
@@ -190,7 +190,7 @@ const SeccionesModule = () => {
               </div>
             ) : (
               sections.map((section) => {
-                const articleCount = articles.filter(a => a.sectionId === section.id).length;
+                const articleCount = articles.filter(a => a.section === section.id).length;
                 return (
                   <div
                     key={section.id}

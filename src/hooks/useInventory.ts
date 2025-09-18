@@ -103,11 +103,11 @@ export const useInventory = () => {
     makeApiCall(`/api/inventory/${id}`, 'DELETE', undefined, 'Artículo eliminado exitosamente.');
 
   // La búsqueda se mantiene en el cliente para una respuesta instantánea
-  const searchArticles = (query: string, sectionId: string): Article[] => {
+  const searchArticles = (query: string, sectionId?: string): Article[] => {
     const lowercasedQuery = query.toLowerCase();
     return articles.filter(
       (article) =>
-        article.sectionId === sectionId &&
+        (sectionId ? article.section === sectionId : true) &&
         (article.name.toLowerCase().includes(lowercasedQuery) ||
           article.code.toLowerCase().includes(lowercasedQuery) ||
           (article.brand && article.brand.toLowerCase().includes(lowercasedQuery)))
