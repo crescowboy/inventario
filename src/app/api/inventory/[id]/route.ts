@@ -44,11 +44,11 @@ export async function PUT(req: NextRequest) {
     }
 
     // Recibe todos los campos posibles
-    const { code, name, brand, stock, price, reference } = await req.json();
+    const { code, name, brand, units, price, reference } = await req.json();
 
-    if (name === undefined || stock === undefined) {
+    if (name === undefined || units === undefined) {
       return NextResponse.json(
-        { message: "Nombre y stock son requeridos." },
+        { message: "Nombre y unidades son requeridos." },
         { status: 400 }
       );
     }
@@ -56,7 +56,7 @@ export async function PUT(req: NextRequest) {
     // Actualiza todos los campos recibidos
     const updatedArticle = await Article.findByIdAndUpdate(
       id,
-      { code, name, brand, stock, price, reference },
+      { code, name, brand, units, price, reference },
       { new: true, runValidators: true }
     );
 
@@ -65,9 +65,13 @@ export async function PUT(req: NextRequest) {
     }
 
     return NextResponse.json(updatedArticle);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((val: any) => val.message);
+      return NextResponse.json({ message: messages.join(', ') }, { status: 400 });
+    }
     return NextResponse.json(
-      { message: "Error al actualizar el artículo." },
+      { message: error.message || "Error al actualizar el artículo." },
       { status: 500 }
     );
   }

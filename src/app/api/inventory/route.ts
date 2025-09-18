@@ -41,7 +41,7 @@ export async function GET() {
  *             type: object
  *             properties:
  *               name: { type: string }
- *               stock: { type: number }
+ *               units: { type: number }
  *               description: { type: string }
  *               section: { type: string }
  *               image: { type: string }

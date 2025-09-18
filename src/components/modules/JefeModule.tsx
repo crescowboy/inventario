@@ -90,10 +90,7 @@ const JefeModule = () => {
       return;
     }
 
-    updateArticle(editingArticle.id, {
-      ...editForm,
-      stock: editForm.units, // <-- este cambio es clave
-    });
+    updateArticle(editingArticle.id, editForm);
 
     toast({
       title: "Artículo actualizado",
