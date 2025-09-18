@@ -6,44 +6,100 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Package, TrendingUp, AlertCircle, Loader2, PlusCircle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 import { useState } from "react";
-import ArticleForm from "./ArticleForm"; // Importamos el formulario
 import { Article } from "@/types/inventory";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Save, X } from "lucide-react";
 
 const InventarioModule = () => {
   const { articles, sections, loading, error, addArticle, updateArticle, deleteArticle } = useInventory();
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const { toast } = useToast();
 
-  const handleAddNew = () => {
-    setSelectedArticle(null);
-    setIsFormOpen(true);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [editForm, setEditForm] = useState<Article>({
+    id: "",
+    code: "",
+    name: "",
+    brand: "",
+    units: 0,
+    price: 0,
+    reference: "",
+    description: "",
+    section: "",
+    createdAt: "",
+    updatedAt: "",
+  });
+
+  const startEdit = (article: Article) => {
+    setEditingArticle(article);
+    setEditForm(article);
   };
 
-  const handleEdit = (article: Article) => {
-    setSelectedArticle(article);
-    setIsFormOpen(true);
+  const saveEdit = async () => {
+    if (!editingArticle) return;
+
+    if (!editForm.name.trim()) {
+      toast({
+        title: "Error de validación",
+        description: "El nombre del artículo es requerido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editForm.units <= 0) {
+      toast({
+        title: "Error de validación",
+        description: "Las unidades deben ser mayores a 0.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await updateArticle(editingArticle.id, editForm);
+      toast({
+        title: "Artículo actualizado",
+        description: `${editForm.name} ha sido actualizado exitosamente`,
+      });
+      setEditingArticle(null);
+    } catch (error: any) {
+      toast({
+        title: "Error al actualizar",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = async (articleId: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este artículo?")) {
+  const cancelEdit = () => {
+    setEditingArticle(null);
+    setEditForm({
+      id: "",
+      code: "",
+      name: "",
+      brand: "",
+      units: 0,
+      price: 0,
+      reference: "",
+      description: "",
+      section: "",
+      createdAt: "",
+      updatedAt: "",
+    });
+  };
+
+  const handleDelete = async (article: Article) => {
+    if (confirm(`¿Estás seguro de que quieres eliminar "${article.name}"?`)) {
       try {
-        await deleteArticle(articleId);
+        await deleteArticle(article.id);
         toast({ title: "Artículo eliminado", description: "El artículo ha sido eliminado correctamente." });
       } catch (error: any) {
         toast({ title: "Error al eliminar", description: error.message, variant: "destructive" });
       }
-    }
-  };
-
-  const handleFormSubmit = async (data: any) => {
-    if (selectedArticle) {
-      // Es una edición
-      await updateArticle(selectedArticle.id, data);
-    } else {
-      // Es una creación
-      await addArticle(data);
     }
   };
 
@@ -68,7 +124,7 @@ const InventarioModule = () => {
             <p className="text-muted-foreground">Vista consolidada de todos los artículos</p>
           </div>
         </div>
-        <Button onClick={handleAddNew} className="gap-2">
+        <Button onClick={() => { /* handleAddNew logic here if needed, or remove button */ }} className="gap-2">
           <PlusCircle className="w-4 h-4" />
           Añadir Artículo
         </Button>
@@ -98,19 +154,104 @@ const InventarioModule = () => {
                     const statusVariant = article.units === 0 ? 'destructive' : article.units <= 10 ? 'warning' : 'secondary';
                     return (
                       <TableRow key={article.id} className="hover:bg-muted/50 transition-colors">
-                        <TableCell className="font-medium">{article.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{article.description || '-'}</TableCell>
-                        <TableCell><Badge variant="outline">{sections.find(s => s.id === article.section)?.name || 'N/A'}</Badge></TableCell>
-                        <TableCell className="text-right font-mono font-bold">{article.units}</TableCell>
+                        <TableCell className="font-medium">
+                          {editingArticle?.id === article.id ? (
+                            <Input
+                              value={editForm.name}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                              className="h-8"
+                            />
+                          ) : (
+                            article.name
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {editingArticle?.id === article.id ? (
+                            <Textarea
+                              value={editForm.description || ''}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                              className="h-8 resize-none"
+                            />
+                          ) : (
+                            article.description || '-'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editingArticle?.id === article.id ? (
+                            <Select
+                              value={editForm.section}
+                              onValueChange={(value) => setEditForm(prev => ({ ...prev, section: value }))}
+                            >
+                              <SelectTrigger className="h-8 w-[180px]">
+                                <SelectValue placeholder="Selecciona una sección" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {sections.map(section => (
+                                  <SelectItem key={section.id} value={section.id}>
+                                    {section.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge variant="outline">{sections.find(s => s.id === article.section)?.name || 'N/A'}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold">
+                          {editingArticle?.id === article.id ? (
+                            <Input
+                              type="number"
+                              value={editForm.units}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, units: parseInt(e.target.value) || 0 }))}
+                              className="h-8 w-20"
+                            />
+                          ) : (
+                            article.units
+                          )}
+                        </TableCell>
                         <TableCell><Badge variant={statusVariant}>{stockStatus}</Badge></TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEdit(article)} className="gap-2"><Edit className="w-4 h-4"/> Editar</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDelete(article.id)} className="gap-2 text-destructive focus:text-destructive"><Trash2 className="w-4 h-4"/> Eliminar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex gap-1 justify-end">
+                            {editingArticle?.id === article.id ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={saveEdit}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Save className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={cancelEdit}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => startEdit(article)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDelete(article)}
+                                  className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -121,14 +262,6 @@ const InventarioModule = () => {
           )}
         </CardContent>
       </Card>
-
-      <ArticleForm 
-        isOpen={isFormOpen} 
-        onOpenChange={setIsFormOpen} 
-        onSubmit={handleFormSubmit} 
-        initialData={selectedArticle} 
-        sections={sections}
-      />
     </div>
   );
 };
