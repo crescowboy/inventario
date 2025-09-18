@@ -22,6 +22,7 @@ const JefeModule = () => {
     units: 0,
     price: 0,
     reference: "",
+    section: "", // <-- agrega aquí
   });
 
   const { articles, bulkAddArticles, updateArticle, deleteArticle } = useInventory();
@@ -64,14 +65,36 @@ const JefeModule = () => {
       units: article.units,
       price: article.price,
       reference: article.reference,
+      section: article.section,
     });
   };
 
   const saveEdit = () => {
     if (!editingArticle) return;
 
-    updateArticle(editingArticle.id, editForm);
-    
+    if (!editForm.name.trim()) {
+      toast({
+        title: "Error de validación",
+        description: "El nombre del artículo es requerido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editForm.units <= 0) {
+      toast({
+        title: "Error de validación",
+        description: "Las unidades deben ser mayores a 0.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateArticle(editingArticle.id, {
+      ...editForm,
+      stock: editForm.units, // <-- este cambio es clave
+    });
+
     toast({
       title: "Artículo actualizado",
       description: `${editForm.name} ha sido actualizado exitosamente`,
@@ -89,6 +112,7 @@ const JefeModule = () => {
       units: 0,
       price: 0,
       reference: "",
+      section: "", // <-- agrega aquí también
     });
   };
 

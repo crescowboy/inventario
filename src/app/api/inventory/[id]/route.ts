@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Article from "@/models/Article";
-import Section from "@/models/Section";
 import mongoose from "mongoose";
 
 const { isValidObjectId } = mongoose;
@@ -44,33 +43,20 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ message: "ID de artículo no válido." }, { status: 400 });
     }
 
-    const { name, stock, description, section, image } = await req.json();
+    // Recibe todos los campos posibles
+    const { code, name, brand, stock, price, reference } = await req.json();
 
-    if (name === undefined || stock === undefined || section === undefined) {
+    if (name === undefined || stock === undefined) {
       return NextResponse.json(
-        { message: "Nombre, stock y sección son requeridos." },
+        { message: "Nombre y stock son requeridos." },
         { status: 400 }
       );
     }
 
-    if (!isValidObjectId(section)) {
-        return NextResponse.json(
-            { message: "El ID de la sección no es válido." },
-            { status: 400 }
-        );
-    }
-
-    const sectionExists = await Section.findById(section);
-    if (!sectionExists) {
-        return NextResponse.json(
-            { message: "La sección asignada no existe." },
-            { status: 404 }
-        );
-    }
-
+    // Actualiza todos los campos recibidos
     const updatedArticle = await Article.findByIdAndUpdate(
       id,
-      { name, stock, description, section, image },
+      { code, name, brand, stock, price, reference },
       { new: true, runValidators: true }
     );
 
