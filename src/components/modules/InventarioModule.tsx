@@ -7,7 +7,7 @@ import { Package, TrendingUp, AlertCircle, Loader2, PlusCircle, MoreHorizontal, 
 import { useInventory } from "@/hooks/useInventory";
 import { useState } from "react";
 import { Article } from "@/types/inventory";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,6 @@ import ArticleForm from "./ArticleForm";
 
 const InventarioModule = () => {
   const { articles, sections, loading, error, addArticle, updateArticle, deleteArticle } = useInventory();
-  const { toast } = useToast();
   const [isAddArticleOpen, setIsAddArticleOpen] = useState(false);
 
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
@@ -44,36 +43,41 @@ const InventarioModule = () => {
     if (!editingArticle) return;
 
     if (!editForm.name.trim()) {
-      toast({
-        title: "Error de validación",
-        description: "El nombre del artículo es requerido.",
-        variant: "destructive",
-      });
+      toast.error(
+        <>
+          <div className="font-bold">Error de validación</div>
+          <div>El nombre del artículo es requerido.</div>
+        </>
+      );
       return;
     }
 
     if (editForm.units < 0) {
-      toast({
-        title: "Error de validación",
-        description: "Las unidades no pueden ser negativas.",
-        variant: "destructive",
-      });
+      toast.error(
+        <>
+          <div className="font-bold">Error de validación</div>
+          <div>Las unidades no pueden ser negativas.</div>
+        </>
+      );
       return;
     }
 
     try {
       await updateArticle(editingArticle.id, editForm);
-      toast({
-        title: "Artículo actualizado",
-        description: `${editForm.name} ha sido actualizado exitosamente`,
-      });
+      toast.success(
+        <>
+          <div className="font-bold">Artículo actualizado</div>
+          <div>{editForm.name} ha sido actualizado exitosamente</div>
+        </>
+      );
       setEditingArticle(null);
     } catch (error: any) {
-      toast({
-        title: "Error al actualizar",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(
+        <>
+          <div className="font-bold">Error al actualizar</div>
+          <div>{error.message}</div>
+        </>
+      );
     }
   };
 
@@ -98,9 +102,19 @@ const InventarioModule = () => {
     if (confirm(`¿Estás seguro de que quieres eliminar "${article.name}"?`)) {
       try {
         await deleteArticle(article.id);
-        toast({ title: "Artículo eliminado", description: "El artículo ha sido eliminado correctamente." });
+        toast.success(
+          <>
+            <div className="font-bold">Artículo eliminado</div>
+            <div>El artículo ha sido eliminado correctamente.</div>
+          </>
+        );
       } catch (error: any) {
-        toast({ title: "Error al eliminar", description: error.message, variant: "destructive" });
+        toast.error(
+          <>
+            <div className="font-bold">Error al eliminar</div>
+            <div>{error.message}</div>
+          </>
+        );
       }
     }
   };
