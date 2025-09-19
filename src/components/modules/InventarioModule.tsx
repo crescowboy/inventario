@@ -13,10 +13,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, X } from "lucide-react";
+import ArticleForm from "./ArticleForm";
 
 const InventarioModule = () => {
   const { articles, sections, loading, error, addArticle, updateArticle, deleteArticle } = useInventory();
   const { toast } = useToast();
+  const [isAddArticleOpen, setIsAddArticleOpen] = useState(false);
 
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [editForm, setEditForm] = useState<Article>({
@@ -116,6 +118,12 @@ const InventarioModule = () => {
 
   return (
     <div className="space-y-6">
+       <ArticleForm
+        isOpen={isAddArticleOpen}
+        onOpenChange={setIsAddArticleOpen}
+        onSubmit={addArticle}
+        sections={sections}
+      />
       <div className="flex justify-between items-center gap-3">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg"><Package className="w-5 h-5 text-primary" /></div>
@@ -124,7 +132,7 @@ const InventarioModule = () => {
             <p className="text-muted-foreground">Vista consolidada de todos los artículos</p>
           </div>
         </div>
-        <Button onClick={() => { /* handleAddNew logic here if needed, or remove button */ }} className="gap-2">
+        <Button onClick={() => setIsAddArticleOpen(true)} className="gap-2">
           <PlusCircle className="w-4 h-4" />
           Añadir Artículo
         </Button>
@@ -147,7 +155,7 @@ const InventarioModule = () => {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Descripción</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Descripción</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead className="text-right">Precio</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {articles.map((article) => {
                     const stockStatus = article.units === 0 ? 'Sin Stock' : article.units <= 10 ? 'Stock Bajo' : 'Disponible';
@@ -207,6 +215,19 @@ const InventarioModule = () => {
                             />
                           ) : (
                             article.units
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold">
+                          {editingArticle?.id === article.id ? (
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={editForm.price}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                              className="h-8 w-24 text-right"
+                            />
+                          ) : (
+                            `${article.price.toFixed(2)}`
                           )}
                         </TableCell>
                         <TableCell><Badge variant={statusVariant}>{stockStatus}</Badge></TableCell>

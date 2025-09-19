@@ -61,7 +61,13 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({ ...prev, [name]: type === 'number' ? parseInt(value) || 0 : value }));
+    if (name === 'price') {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    } else if (type === 'number') {
+      setFormData(prev => ({ ...prev, [name]: parseInt(value, 10) || 0 }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSectionChange = (value: string) => {
@@ -72,11 +78,16 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
     e.preventDefault();
     setIsSubmitting(true);
 
+    const dataToSubmit = {
+      ...formData,
+      price: parseFloat(String(formData.price).replace(',', '.')) || 0,
+    };
+
     try {
       if (isEditMode && initialData) {
-        await onSubmit({ ...formData, id: initialData.id });
+        await onSubmit({ ...dataToSubmit, id: initialData.id });
       } else {
-        await onSubmit(formData);
+        await onSubmit(dataToSubmit);
       }
       toast({
         title: `Artículo ${isEditMode ? 'actualizado' : 'creado'}`,
@@ -150,7 +161,7 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
             </div>
             <div className="space-y-2">
               <Label htmlFor="price">Precio</Label>
-              <Input id="price" name="price" type="number" value={formData.price} onChange={handleChange} required />
+              <Input id="price" name="price" type="text" inputMode="decimal" value={formData.price} onChange={handleChange} required />
             </div>
           </div>
           <DialogFooter>
