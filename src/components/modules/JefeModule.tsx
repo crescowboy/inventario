@@ -10,10 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Crown, Upload, Edit, Trash2, Plus, Save, X } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 import { formatCurrency, Article } from "@/types/inventory";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner"; // o desde tu wrapper de shadcn/ui
 
 const JefeModule = () => {
   const [bulkData, setBulkData] = useState("");
+  const [loading, setLoading] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [editForm, setEditForm] = useState({
     code: "",
@@ -25,34 +26,69 @@ const JefeModule = () => {
     section: "", // <-- agrega aquí
   });
 
-  const { articles, bulkAddArticles, updateArticle, deleteArticle } = useInventory();
-  const { toast } = useToast();
+  const { articles, updateArticle, deleteArticle, refetch } = useInventory();
 
-  const handleBulkUpload = () => {
+  const handleBulkUpload = async () => {
     if (!bulkData.trim()) {
-      toast({
-        title: "Error",
-        description: "Ingresa los datos de los artículos",
-        variant: "destructive",
-      });
+      toast.error("La caja de texto está vacía.");
       return;
     }
+    setLoading(true);
 
     try {
-      const { addedArticles, updatedArticles } = bulkAddArticles(bulkData);
-      
-      toast({
-        title: "Carga masiva completada",
-        description: `${addedArticles.length} artículos agregados, ${updatedArticles.length} actualizados`,
+      const lines = bulkData.trim().split('\n');
+      const articlesToUpload = lines.map(line => {
+        if (!line.trim()) return null;
+        const [code, name, brand, units, price, reference, section] = line.split(',').map(s => s.trim());
+        if (!code || !name || !units || !price || !section) {
+          throw new Error(`Línea inválida: "${line}". Faltan campos requeridos.`);
+        }
+        const parsedUnits = parseInt(units);
+        const parsedPrice = parseFloat(price);
+        if (isNaN(parsedUnits) || isNaN(parsedPrice)) {
+          throw new Error(`Valores no numéricos en línea: "${line}".`);
+        }
+        return { code, name, brand, units: parsedUnits, price: parsedPrice, reference, section };
+      }).filter(Boolean);
+
+      if (articlesToUpload.length === 0) {
+        throw new Error("No se encontraron artículos válidos para cargar.");
+      }
+
+      const response = await fetch("/api/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(articlesToUpload),
       });
 
+      let description = "Error en el servidor.";
+      let result: any = {};
+
+      try {
+        result = await response.json();
+        description = result.message || description;
+        if (result.errors && result.errors.length > 0) {
+          const errorDetails = result.errors.map((e: any) => `• ${e.code}: ${e.error}`).join('\n');
+          description += `\n\nDetalles:\n${errorDetails}`;
+        }
+      } catch (e) {
+        // Si no se puede parsear JSON, deja description como está
+      }
+
+      if (!response.ok || (result.errors && result.errors.length > 0)) {
+        toast.error(description);
+        setLoading(false);
+        return;
+      }
+
+      toast.success(description);
       setBulkData("");
-    } catch (error) {
-      toast({
-        title: "Error en carga masiva",
-        description: "Verifica el formato de los datos",
-        variant: "destructive",
-      });
+      refetch();
+
+    } catch (error: any) {
+      toast.error(error.message || "Error en Carga Masiva");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,29 +109,33 @@ const JefeModule = () => {
     if (!editingArticle) return;
 
     if (!editForm.name.trim()) {
-      toast({
-        title: "Error de validación",
-        description: "El nombre del artículo es requerido.",
-        variant: "destructive",
-      });
+      toast.error(
+        <>
+          <div className="font-bold">Error de validación</div>
+          <div>El nombre del artículo es requerido.</div>
+        </>
+      );
       return;
     }
 
     if (editForm.units <= 0) {
-      toast({
-        title: "Error de validación",
-        description: "Las unidades deben ser mayores a 0.",
-        variant: "destructive",
-      });
+      toast.error(
+        <>
+          <div className="font-bold">Error de validación</div>
+          <div>Las unidades deben ser mayores a 0.</div>
+        </>
+      );
       return;
     }
 
     updateArticle(editingArticle.id, editForm);
 
-    toast({
-      title: "Artículo actualizado",
-      description: `${editForm.name} ha sido actualizado exitosamente`,
-    });
+    toast.success(
+      <>
+        <div className="font-bold">Artículo actualizado</div>
+        <div>{editForm.name} ha sido actualizado exitosamente</div>
+      </>
+    );
 
     setEditingArticle(null);
   };
@@ -109,17 +149,19 @@ const JefeModule = () => {
       units: 0,
       price: 0,
       reference: "",
-      section: "", // <-- agrega aquí también
+      section: "",
     });
   };
 
   const handleDelete = (article: Article) => {
     if (window.confirm(`¿Estás seguro de eliminar "${article.name}"?`)) {
       deleteArticle(article.id);
-      toast({
-        title: "Artículo eliminado",
-        description: `${article.name} ha sido eliminado del inventario`,
-      });
+      toast.success(
+        <>
+          <div className="font-bold">Artículo eliminado</div>
+          <div>{article.name} ha sido eliminado del inventario</div>
+        </>
+      );
     }
   };
 
@@ -143,7 +185,7 @@ const JefeModule = () => {
             Carga Masiva de Artículos
           </CardTitle>
           <CardDescription>
-            Carga múltiples artículos separados por líneas. Formato: Código, Nombre, Marca, Unidades, Precio, Referencia
+            Carga múltiples artículos separados por líneas. Formato: Código, Nombre, Marca, Unidades, Precio, Referencia, Sección
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -152,9 +194,9 @@ const JefeModule = () => {
             <Textarea
               id="bulk-data"
               placeholder={`Ejemplo:
-001, Martillo Profesional, STANLEY, 15, 25000, HM-001
-002, Destornillador Phillips, BAHCO, 8, 12000, DS-PH-002
-003, Cable UTP Cat6, PANDUIT, 100, 2500, CAT6-UTP`}
+TAL-001,Taladro Percutor,DeWalt,15,120.50,DW508S,Herramientas Eléctricas
+MAR-005,Martillo Carpintero,Stanley,35,25.00,51-163,Herramientas Manuales
+`}
               value={bulkData}
               onChange={(e) => setBulkData(e.target.value)}
               className="min-h-32 font-mono text-sm"
@@ -163,9 +205,19 @@ const JefeModule = () => {
           <Button 
             onClick={handleBulkUpload}
             className="w-full bg-gradient-to-r from-secondary to-primary hover:from-secondary/90 hover:to-primary/90"
+            disabled={loading}
           >
-            <Upload className="w-4 h-4 mr-2" />
-            Procesar Carga Masiva
+            {loading ? (
+              <>
+                <Upload className="w-4 h-4 mr-2 animate-spin" />
+                Procesando...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4 mr-2" />
+                Procesar Carga Masiva
+              </>
+            )}
           </Button>
         </CardContent>
       </Card>
