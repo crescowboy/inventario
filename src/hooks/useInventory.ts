@@ -28,20 +28,23 @@ export const useInventory = () => {
     // No recargar si ya está cargando
     if (!loading) setLoading(true);
     try {
-      const [articlesRes, sectionsRes] = await Promise.all([
+      const [articlesRes, sectionsRes, activitiesRes] = await Promise.all([
         fetch('/api/inventory'),
         fetch('/api/sections'),
+        fetch('/api/activities'),
       ]);
 
-      if (!articlesRes.ok || !sectionsRes.ok) {
+      if (!articlesRes.ok || !sectionsRes.ok || !activitiesRes.ok) {
         throw new Error('Error al obtener los datos del servidor.');
       }
 
       const articlesData = await articlesRes.json();
       const sectionsData = await sectionsRes.json();
+      const activitiesData = await activitiesRes.json();
 
       setArticles(transformApiResponse(articlesData));
       setSections(transformApiResponse(sectionsData));
+      setRecentActivities(transformApiResponse(activitiesData));
       
       setError(null);
     } catch (err: any) {
@@ -74,33 +77,105 @@ export const useInventory = () => {
         toast({ title: "Éxito", description: successMessage });
       }
 
-      await fetchData(); // Refrescar los datos después de cada operación exitosa
-      return await response.json();
+      return await response.json(); // Devuelve la respuesta para poder usarla
     } catch (err: any) {
       toast({ title: "Error en la operación", description: err.message, variant: "destructive" });
-      throw err; // Lanzar el error para que el componente que llama pueda manejarlo si es necesario
+      throw err;
+    }
+  };
+
+  const logActivity = async (action: 'created' | 'updated' | 'deleted', entity: 'article', entityId: string, details?: any) => {
+    // En una app real, el usuario vendría de la sesión
+    const user = { id: '60d21b4667d0d8992e610c85', name: 'Admin' }; // TODO: Reemplazar con el usuario de la sesión
+
+    const activityData = {
+      user,
+      action,
+      entity,
+      entityId,
+      ...details,
+    };
+
+    try {
+      await fetch('/api/activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(activityData),
+      });
+    } catch (error) {
+      console.error("Failed to log activity:", error);
     }
   };
 
   // --- Funciones de Sección ---
-  const addSection = (data: { name: string; description?: string }) => 
-    makeApiCall('/api/sections', 'POST', data, 'Sección creada exitosamente.');
+  const addSection = async (data: { name: string; description?: string }) => {
+    const newSection = await makeApiCall('/api/sections', 'POST', data, 'Sección creada exitosamente.');
+    await fetchData(); // Refrescar datos
+    return newSection;
+  };
 
-  const updateSection = (id: string, data: { name: string; description?: string }) => 
-    makeApiCall(`/api/sections/${id}`, 'PUT', data, 'Sección actualizada exitosamente.');
+  const updateSection = async (id: string, data: { name: string; description?: string }) => {
+    const updatedSection = await makeApiCall(`/api/sections/${id}`, 'PUT', data, 'Sección actualizada exitosamente.');
+    await fetchData();
+    return updatedSection;
+  };
 
-  const deleteSection = (id: string) => 
-    makeApiCall(`/api/sections/${id}`, 'DELETE', undefined, 'Sección eliminada exitosamente.');
+  const deleteSection = async (id: string) => {
+    const deletedSection = await makeApiCall(`/api/sections/${id}`, 'DELETE', undefined, 'Sección eliminada exitosamente.');
+    await fetchData();
+    return deletedSection;
+  };
 
   // --- Funciones de Artículo ---
-  const addArticle = (data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) => 
-    makeApiCall('/api/inventory', 'POST', data, 'Artículo creado exitosamente.');
+  const addArticle = async (data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newArticleData = await makeApiCall('/api/inventory', 'POST', data, 'Artículo creado exitosamente.');
+    const newArticle = transformApiResponse([newArticleData])[0];
+    
+    if (newArticle) {
+      await logActivity('created', 'article', newArticle.id, {
+        articleCode: newArticle.code,
+        articleName: newArticle.name,
+        details: `Se añadieron ${newArticle.units} unidades.`,
+      });
+      await fetchData(); // Refrescar todo, incluyendo actividades
+    }
+    return newArticle;
+  };
 
-  const updateArticle = (id: string, data: Partial<Omit<Article, 'id'>>) => 
-    makeApiCall(`/api/inventory/${id}`, 'PUT', data, 'Artículo actualizado exitosamente.');
+  const updateArticle = async (id: string, data: Partial<Omit<Article, 'id'>>) => {
+    const originalArticle = articles.find(a => a.id === id);
+    const updatedArticleData = await makeApiCall(`/api/inventory/${id}`, 'PUT', data, 'Artículo actualizado exitosamente.');
+    const updatedArticle = transformApiResponse([updatedArticleData])[0];
 
-  const deleteArticle = (id: string) => 
-    makeApiCall(`/api/inventory/${id}`, 'DELETE', undefined, 'Artículo eliminado exitosamente.');
+    if (updatedArticle && originalArticle) {
+      const changes = Object.keys(data)
+        .filter(key => (data as any)[key] !== (originalArticle as any)[key])
+        .map(key => `${key}: de '${(originalArticle as any)[key]}' a '${(data as any)[key]}'`);
+
+      await logActivity('updated', 'article', id, {
+        articleCode: updatedArticle.code,
+        articleName: updatedArticle.name,
+        details: changes.length > 0 ? `Cambios: ${changes.join(', ')}` : 'Sin cambios detectados.',
+      });
+      await fetchData();
+    }
+    return updatedArticle;
+  };
+
+  const deleteArticle = async (id: string) => {
+    const articleToDelete = articles.find(a => a.id === id);
+    const deletedArticle = await makeApiCall(`/api/inventory/${id}`, 'DELETE', undefined, 'Artículo eliminado exitosamente.');
+    
+    if (articleToDelete) {
+      await logActivity('deleted', 'article', id, {
+        articleCode: articleToDelete.code,
+        articleName: articleToDelete.name,
+        details: 'Artículo eliminado del inventario.',
+      });
+      await fetchData();
+    }
+    return deletedArticle;
+  };
 
   // La búsqueda se mantiene en el cliente para una respuesta instantánea
   const searchArticles = (query: string, sectionId?: string): Article[] => {
