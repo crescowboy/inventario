@@ -305,7 +305,7 @@ const SeccionesModule = () => {
                             <TableHead className="text-right">Unidades</TableHead>
                             <TableHead className="text-right">Precio</TableHead>
                             <TableHead>Referencia</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -331,15 +331,7 @@ const SeccionesModule = () => {
                               <TableCell className="text-muted-foreground">
                                 {article.reference || '-'}
                               </TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditArticle(article)} className="gap-2"><Edit className="w-4 h-4"/> Editar</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDeleteArticle(article.id, article.name)} className="gap-2 text-destructive focus:text-destructive"><Trash2 className="w-4 h-4"/> Eliminar</DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
+                              
                             </TableRow>
                           ))}
                         </TableBody>
