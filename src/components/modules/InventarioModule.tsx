@@ -52,10 +52,10 @@ const InventarioModule = () => {
       return;
     }
 
-    if (editForm.units <= 0) {
+    if (editForm.units < 0) {
       toast({
         title: "Error de validación",
-        description: "Las unidades deben ser mayores a 0.",
+        description: "Las unidades no pueden ser negativas.",
         variant: "destructive",
       });
       return;
