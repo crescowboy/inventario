@@ -40,10 +40,10 @@ export async function POST(req: NextRequest) {
       const errors = [];
 
       for (const item of body) {
-        const { name, code, units, price, section: sectionName, ...rest } = item;
+        const { name, code, units, unitPrice, section: sectionName, ...rest } = item;
 
-        if (!name || !code || units === undefined || price === undefined || !sectionName) {
-          errors.push({ code: code || 'N/A', error: "Campos requeridos faltantes (name, code, units, price, section)." });
+        if (!name || !code || units === undefined || unitPrice === undefined || !sectionName) {
+          errors.push({ code: code || 'N/A', error: "Campos requeridos faltantes (name, code, units, unitPrice, section)." });
           continue;
         }
 
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
           name,
           code,
           units,
-          price,
+          unitPrice,
           section: sectionId,
           ...rest
         });

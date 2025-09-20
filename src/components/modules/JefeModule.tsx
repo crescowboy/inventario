@@ -22,6 +22,8 @@ const JefeModule = () => {
     brand: "",
     units: 0,
     unitPrice: 0,
+    detal: 0,
+    mayor: 0,
     reference: "",
     section: "", // <-- agrega aquí
   });
@@ -39,16 +41,19 @@ const JefeModule = () => {
       const lines = bulkData.trim().split('\n');
       const articlesToUpload = lines.map(line => {
         if (!line.trim()) return null;
-        const [code, name, brand, units, price, reference, section] = line.split(',').map(s => s.trim());
-        if (!code || !name || !units || !price || !section) {
+        const [code, name, brand, units, price, detal, mayor, reference, section] = line.split(',').map(s => s.trim());
+        if (!code || !name || !units || !price || !section || !detal || !mayor) {
           throw new Error(`Línea inválida: "${line}". Faltan campos requeridos.`);
         }
         const parsedUnits = parseInt(units);
         const parsedPrice = parseFloat(price);
-        if (isNaN(parsedUnits) || isNaN(parsedPrice)) {
+        const parsedDetal = parseFloat(detal);
+        const parsedMayor = parseFloat(mayor);
+
+        if (isNaN(parsedUnits) || isNaN(parsedPrice) || isNaN(parsedDetal) || isNaN(parsedMayor)) {
           throw new Error(`Valores no numéricos en línea: "${line}".`);
         }
-        return { code, name, brand, units: parsedUnits, price: parsedPrice, reference, section };
+        return { code, name, brand, units: parsedUnits, unitPrice: parsedPrice, detal: parsedDetal, mayor: parsedMayor, reference, section };
       }).filter(Boolean);
 
       if (articlesToUpload.length === 0) {
@@ -99,7 +104,9 @@ const JefeModule = () => {
       name: article.name,
       brand: article.brand,
       units: article.units,
-      unitPrice: article.unitPrice, // This line needs to change
+      unitPrice: article.unitPrice,
+      detal: article.detal,
+      mayor: article.mayor,
       reference: article.reference,
       section: article.section,
     });
@@ -148,6 +155,8 @@ const JefeModule = () => {
       brand: "",
       units: 0,
       unitPrice: 0,
+      detal: 0,
+      mayor: 0,
       reference: "",
       section: "",
     });
@@ -203,7 +212,7 @@ const JefeModule = () => {
             Carga Masiva de Artículos
           </CardTitle>
           <CardDescription>
-            Carga múltiples artículos separados por líneas. Formato: Código, Nombre, Marca, Unidades, Precio, Referencia, Sección
+            Carga múltiples artículos separados por líneas. Formato: Código, Nombre, Marca, Unidades, Precio, Detal, Mayor, Referencia, Sección
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -212,8 +221,8 @@ const JefeModule = () => {
             <Textarea
               id="bulk-data"
               placeholder={`Ejemplo:
-TAL-001,Taladro Percutor,DeWalt,15,120.50,DW508S,Herramientas Eléctricas
-MAR-005,Martillo Carpintero,Stanley,35,25.00,51-163,Herramientas Manuales
+TAL-001,Taladro Percutor,DeWalt,15,120.50,130.00,125.00,DW508S,Herramientas Eléctricas
+MAR-005,Martillo Carpintero,Stanley,35,25.00,28.00,26.00,51-163,Herramientas Manuales
 `}
               value={bulkData}
               onChange={(e) => setBulkData(e.target.value)}
@@ -264,6 +273,8 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,51-163,Herramientas Manuales
                   <TableHead>Marca</TableHead>
                   <TableHead className="text-right">Unidades</TableHead>
                   <TableHead className="text-right">Precio Unidad</TableHead>
+                  <TableHead className="text-right">Detal</TableHead>
+                  <TableHead className="text-right">Mayor</TableHead>
                   <TableHead>Referencia</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -328,6 +339,30 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,51-163,Herramientas Manuales
                         />
                       ) : (
                         <span className="font-mono">{(article.unitPrice ?? 0).toFixed(2)}</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {editingArticle?.id === article.id ? (
+                        <Input
+                          type="number"
+                          value={editForm.detal}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, detal: parseFloat(e.target.value) || 0 }))}
+                          className="h-8 w-24"
+                        />
+                      ) : (
+                        <span className="font-mono">{(article.detal ?? 0).toFixed(2)}</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {editingArticle?.id === article.id ? (
+                        <Input
+                          type="number"
+                          value={editForm.mayor}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, mayor: parseFloat(e.target.value) || 0 }))}
+                          className="h-8 w-24"
+                        />
+                      ) : (
+                        <span className="font-mono">{(article.mayor ?? 0).toFixed(2)}</span>
                       )}
                     </TableCell>
                     <TableCell>
