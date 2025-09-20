@@ -21,7 +21,7 @@ const JefeModule = () => {
     name: "",
     brand: "",
     units: 0,
-    price: 0,
+    unitPrice: 0,
     reference: "",
     section: "", // <-- agrega aquí
   });
@@ -99,7 +99,7 @@ const JefeModule = () => {
       name: article.name,
       brand: article.brand,
       units: article.units,
-      price: article.price,
+      unitPrice: article.unitPrice, // This line needs to change
       reference: article.reference,
       section: article.section,
     });
@@ -147,7 +147,7 @@ const JefeModule = () => {
       name: "",
       brand: "",
       units: 0,
-      price: 0,
+      unitPrice: 0,
       reference: "",
       section: "",
     });
@@ -245,7 +245,7 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,51-163,Herramientas Manuales
                   <TableHead>Nombre</TableHead>
                   <TableHead>Marca</TableHead>
                   <TableHead className="text-right">Unidades</TableHead>
-                  <TableHead className="text-right">Precio</TableHead>
+                  <TableHead className="text-right">Precio Unidad</TableHead>
                   <TableHead>Referencia</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -304,12 +304,12 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,51-163,Herramientas Manuales
                       {editingArticle?.id === article.id ? (
                         <Input
                           type="number"
-                          value={editForm.price}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                          value={editForm.unitPrice}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 }))}
                           className="h-8 w-24"
                         />
                       ) : (
-                        <span className="font-mono">{formatCurrency(article.price)}</span>
+                        <span className="font-mono">{(article.unitPrice ?? 0).toFixed(2)}</span>
                       )}
                     </TableCell>
                     <TableCell>
