@@ -303,7 +303,7 @@ const SeccionesModule = () => {
                             <TableHead>Nombre</TableHead>
                             <TableHead>Marca</TableHead>
                             <TableHead className="text-right">Unidades</TableHead>
-                            <TableHead className="text-right">Precio</TableHead>
+                            <TableHead className="text-right">Precio Unidad</TableHead>
                             <TableHead>Referencia</TableHead>
                             
                           </TableRow>
@@ -326,7 +326,7 @@ const SeccionesModule = () => {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right font-mono">
-                                {formatCurrency(article.price)}
+                                {formatCurrency(article.unitPrice)}
                               </TableCell>
                               <TableCell className="text-muted-foreground">
                                 {article.reference || '-'}
