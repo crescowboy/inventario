@@ -2,15 +2,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Package, TrendingUp, AlertCircle, Loader2, PlusCircle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Package, TrendingUp, AlertCircle, Loader2, PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 import { useState } from "react";
 import { Article } from "@/types/inventory";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, X } from "lucide-react";
 import ArticleForm from "./ArticleForm";
@@ -36,6 +34,10 @@ const InventarioModule = () => {
     createdAt: "",
     updatedAt: "",
   });
+
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const startEdit = (article: Article) => {
     setEditingArticle(article);
@@ -92,7 +94,10 @@ const InventarioModule = () => {
       name: "",
       brand: "",
       units: 0,
-      price: 0,
+      unitPrice: 0,
+      totalValue: 0,
+      detal: 0,
+      mayor: 0,
       reference: "",
       description: "",
       section: "",
@@ -101,23 +106,28 @@ const InventarioModule = () => {
     });
   };
 
-  const handleDelete = async (article: Article) => {
-    if (confirm(`¿Estás seguro de que quieres eliminar "${article.name}"?`)) {
+  const handleDelete = (article: Article) => {
+    setArticleToDelete(article);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (articleToDelete) {
+      setIsDeleting(true);
       try {
-        await deleteArticle(article.id);
+        await deleteArticle(articleToDelete.id);
         toast.success(
           <>
             <div className="font-bold">Artículo eliminado</div>
-            <div>El artículo ha sido eliminado correctamente.</div>
+            <div>{articleToDelete.name} ha sido eliminado del inventario</div>
           </>
         );
-      } catch (error: any) {
-        toast.error(
-          <>
-            <div className="font-bold">Error al eliminar</div>
-            <div>{error.message}</div>
-          </>
-        );
+        setDeleteDialogOpen(false);
+        setArticleToDelete(null);
+      } catch (error) {
+        toast.error("Error al eliminar el artículo.");
+      } finally {
+        setIsDeleting(false);
       }
     }
   };
@@ -156,7 +166,7 @@ const InventarioModule = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="shadow-sm"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Tipo de articulos</p><p className="text-2xl font-bold text-foreground">{sections.length}</p></div><div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg"><Package className="w-6 h-6 text-primary" /></div></div></CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Total de Artículos</p><p className="text-2xl font-bold text-foreground">{articles.length}</p></div><div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg"><Package className="w-6 h-6 text-primary" /></div></div></CardContent></Card>
         <Card className="shadow-sm"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Total Unidades</p><p className="text-2xl font-bold text-foreground">{totalItems.toLocaleString()}</p></div><div className="flex items-center justify-center w-12 h-12 bg-secondary/10 rounded-lg"><TrendingUp className="w-6 h-6 text-secondary" /></div></div></CardContent></Card>
         <Card className="shadow-sm"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Artículos con Stock Bajo</p><p className="text-2xl font-bold text-warning">{lowStockItems}</p></div><div className="flex items-center justify-center w-12 h-12 bg-warning/10 rounded-lg"><AlertCircle className="w-6 h-6 text-warning" /></div></div></CardContent></Card>
       </div>
@@ -329,6 +339,25 @@ const InventarioModule = () => {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar el artículo "{articleToDelete?.name}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
