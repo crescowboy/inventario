@@ -172,7 +172,7 @@ const InventarioModule = () => {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Descripción</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead className="text-right">Unit Price</TableHead><TableHead className="text-right">Total Value</TableHead><TableHead>Precio Detal</TableHead><TableHead>Precio Mayor</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead className="text-right">Unit Price</TableHead><TableHead className="text-right">Total Value</TableHead><TableHead>Precio Detal</TableHead><TableHead>Precio Mayor</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {articles.map((article) => {
                     const stockStatus = article.units === 0 ? 'Sin Stock' : article.units <= 10 ? 'Stock Bajo' : 'Disponible';
@@ -190,17 +190,7 @@ const InventarioModule = () => {
                             article.name
                           )}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {editingArticle?.id === article.id ? (
-                            <Textarea
-                              value={editForm.description || ''}
-                              onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
-                              className="h-8 resize-none"
-                            />
-                          ) : (
-                            article.description || '-'
-                          )}
-                        </TableCell>
+                        
                         <TableCell>
                           {editingArticle?.id === article.id ? (
                             <Select
@@ -239,7 +229,7 @@ const InventarioModule = () => {
                             <Input
                               type="text"
                               inputMode="decimal"
-                              value={editForm.unitPrice}
+                              value={String(editForm.unitPrice)}
                               onChange={(e) => setEditForm(prev => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 }))}
                               className="h-8 w-24 text-right"
                             />

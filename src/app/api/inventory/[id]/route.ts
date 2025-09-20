@@ -45,7 +45,20 @@ export async function PUT(req: NextRequest) {
     }
 
     // Recibe todos los campos posibles
-    const { code, name, brand, units, price, reference, description, section } = await req.json();
+    const {
+      code,
+      name,
+      brand,
+      units,
+      price,
+      reference,
+      description,
+      section,
+      unitPrice,
+      totalValue,
+      detal,
+      mayor,
+    } = await req.json();
 
     if (name === undefined || units === undefined) {
       return NextResponse.json(
@@ -55,24 +68,37 @@ export async function PUT(req: NextRequest) {
     }
 
     if (!isValidObjectId(section)) {
-        return NextResponse.json(
-            { message: "El ID de la sección no es válido." },
-            { status: 400 }
-        );
+      return NextResponse.json(
+        { message: "El ID de la sección no es válido." },
+        { status: 400 }
+      );
     }
 
     const sectionExists = await Section.findById(section);
     if (!sectionExists) {
-        return NextResponse.json(
-            { message: "La sección asignada no existe." },
-            { status: 404 }
-        );
+      return NextResponse.json(
+        { message: "La sección asignada no existe." },
+        { status: 404 }
+      );
     }
 
     // Actualiza todos los campos recibidos
     const updatedArticle = await Article.findByIdAndUpdate(
       id,
-      { code, name, brand, units, price, reference, description, section },
+      {
+        code,
+        name,
+        brand,
+        units,
+        price,
+        reference,
+        description,
+        section,
+        unitPrice,
+        totalValue,
+        detal,
+        mayor,
+      },
       { new: true, runValidators: true }
     );
 
