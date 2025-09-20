@@ -22,7 +22,10 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
     name: '',
     brand: '',
     units: 0,
-    price: 0,
+    unitPrice: 0,
+    totalValue: 0,
+    detal: 0,
+    mayor: 0,
     reference: '',
     description: '',
     section: '',
@@ -39,7 +42,10 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
         name: initialData.name || '',
         brand: initialData.brand || '',
         units: initialData.units || 0,
-        price: initialData.price || 0,
+        unitPrice: initialData.unitPrice || 0,
+        totalValue: initialData.totalValue || 0,
+        detal: initialData.detal || 0,
+        mayor: initialData.mayor || 0,
         reference: initialData.reference || '',
         description: initialData.description || '',
         section: initialData.section || '',
@@ -51,7 +57,10 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
         name: '',
         brand: '',
         units: 0,
-        price: 0,
+        unitPrice: 0,
+        totalValue: 0,
+        detal: 0,
+        mayor: 0,
         reference: '',
         description: '',
         section: defaultSectionId || '',
@@ -61,7 +70,7 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
-    if (name === 'price') {
+    if (name === 'unitPrice' || name === 'totalValue' || name === 'detal' || name === 'mayor') {
       setFormData(prev => ({ ...prev, [name]: value }));
     } else if (type === 'number') {
       setFormData(prev => ({ ...prev, [name]: parseInt(value, 10) || 0 }));
@@ -80,7 +89,10 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
 
     const dataToSubmit = {
       ...formData,
-      price: parseFloat(String(formData.price).replace(',', '.')) || 0,
+      unitPrice: parseFloat(String(formData.unitPrice).replace(',', '.')) || 0,
+      totalValue: parseFloat(String(formData.totalValue).replace(',', '.')) || 0,
+      detal: parseFloat(String(formData.detal).replace(',', '.')) || 0,
+      mayor: parseFloat(String(formData.mayor).replace(',', '.')) || 0,
     };
 
     try {
@@ -160,8 +172,22 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
               <Input id="units" name="units" type="number" value={formData.units} onChange={handleChange} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Precio</Label>
-              <Input id="price" name="price" type="text" inputMode="decimal" value={formData.price} onChange={handleChange} required />
+              <Label htmlFor="unitPrice">Unit Price</Label>
+              <Input id="unitPrice" name="unitPrice" type="text" inputMode="decimal" value={String(formData.unitPrice)} onChange={handleChange} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="totalValue">Total Value</Label>
+              <Input id="totalValue" name="totalValue" type="text" inputMode="decimal" value={String(formData.totalValue)} onChange={handleChange} required />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="detal">Precio Detal</Label>
+              <Input id="detal" name="detal" type="text" inputMode="decimal" value={String(formData.detal)} onChange={handleChange} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mayor">Precio Mayor</Label>
+              <Input id="mayor" name="mayor" type="text" inputMode="decimal" value={String(formData.mayor)} onChange={handleChange} required />
             </div>
           </div>
           <DialogFooter>

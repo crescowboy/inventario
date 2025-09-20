@@ -26,7 +26,10 @@ const InventarioModule = () => {
     name: "",
     brand: "",
     units: 0,
-    price: 0,
+    unitPrice: 0,
+    totalValue: 0,
+    detal: 0,
+    mayor: 0,
     reference: "",
     description: "",
     section: "",
@@ -169,7 +172,7 @@ const InventarioModule = () => {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Descripción</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead className="text-right">Precio</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Descripción</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead className="text-right">Unit Price</TableHead><TableHead className="text-right">Total Value</TableHead><TableHead>Precio Detal</TableHead><TableHead>Precio Mayor</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {articles.map((article) => {
                     const stockStatus = article.units === 0 ? 'Sin Stock' : article.units <= 10 ? 'Stock Bajo' : 'Disponible';
@@ -236,12 +239,51 @@ const InventarioModule = () => {
                             <Input
                               type="text"
                               inputMode="decimal"
-                              value={editForm.price}
-                              onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                              value={editForm.unitPrice}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 }))}
                               className="h-8 w-24 text-right"
                             />
                           ) : (
-                            `${article.price.toFixed(2)}`
+                            `${(article.unitPrice ?? 0).toFixed(2)}`
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold">
+                          {editingArticle?.id === article.id ? (
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={editForm.totalValue}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, totalValue: parseFloat(e.target.value) || 0 }))}
+                              className="h-8 w-24 text-right"
+                            />
+                          ) : (
+                            `${(article.totalValue ?? 0).toFixed(2)}`
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold">
+                          {editingArticle?.id === article.id ? (
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={editForm.detal}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, detal: parseFloat(e.target.value) || 0 }))}
+                              className="h-8 w-24 text-right"
+                            />
+                          ) : (
+                            `${(article.detal ?? 0).toFixed(2)}`
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold">
+                          {editingArticle?.id === article.id ? (
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={editForm.mayor}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, mayor: parseFloat(e.target.value) || 0 }))}
+                              className="h-8 w-24 text-right"
+                            />
+                          ) : (
+                            `${(article.mayor ?? 0).toFixed(2)}`
                           )}
                         </TableCell>
                         <TableCell><Badge variant={statusVariant}>{stockStatus}</Badge></TableCell>

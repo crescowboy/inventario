@@ -4,7 +4,10 @@ export interface Article {
   name: string;
   brand: string;
   units: number;
-  price: number;
+  unitPrice: number;
+  totalValue: number;
+  detal: number;
+  mayor: number;
   reference: string;
   section: string;
   createdAt: string;

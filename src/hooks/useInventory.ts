@@ -12,6 +12,19 @@ const transformApiResponse = (data: any[]) => {
     } else if (section) {
       transformedItem.section = section; // If section is just the ID string
     }
+    // Explicitly convert Decimal128 to number if they exist
+    if (transformedItem.unitPrice && typeof transformedItem.unitPrice.toString === 'function') {
+      transformedItem.unitPrice = parseFloat(transformedItem.unitPrice.toString());
+    }
+    if (transformedItem.totalValue && typeof transformedItem.totalValue.toString === 'function') {
+      transformedItem.totalValue = parseFloat(transformedItem.totalValue.toString());
+    }
+    if (transformedItem.detal && typeof transformedItem.detal.toString === 'function') {
+      transformedItem.detal = parseFloat(transformedItem.detal.toString());
+    }
+    if (transformedItem.mayor && typeof transformedItem.mayor.toString === 'function') {
+      transformedItem.mayor = parseFloat(transformedItem.mayor.toString());
+    }
     return transformedItem;
   });
 };

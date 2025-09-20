@@ -5,7 +5,10 @@ export interface IArticle extends Document {
   name: string;
   brand?: string;
   units: number;
-  price: number;
+  unitPrice: number;
+  totalValue: number;
+  detal: number;
+  mayor: number;
   reference?: string;
   description?: string;
   section: mongoose.Schema.Types.ObjectId;
@@ -34,9 +37,27 @@ const ArticleSchema: Schema = new Schema(
       default: 0,
       min: 0,
     },
-    price: {
-      type: Number,
-      required: [true, 'El precio es requerido'],
+    unitPrice: {
+      type: mongoose.Schema.Types.Decimal128,
+      required: [true, 'El precio por unidad es requerido'],
+      default: 0,
+      min: 0,
+    },
+    totalValue: {
+      type: mongoose.Schema.Types.Decimal128,
+      required: [true, 'El valor total es requerido'],
+      default: 0,
+      min: 0,
+    },
+    detal: {
+      type: mongoose.Schema.Types.Decimal128,
+      required: [true, 'El campo detal es requerido'],
+      default: 0,
+      min: 0,
+    },
+    mayor: {
+      type: mongoose.Schema.Types.Decimal128,
+      required: [true, 'El campo mayor es requerido'],
       default: 0,
       min: 0,
     },
@@ -59,6 +80,9 @@ const ArticleSchema: Schema = new Schema(
   }
 );
 
-const Article = models.Article || mongoose.model<IArticle>('Article', ArticleSchema);
+if (mongoose.models.Article) {
+  delete mongoose.models.Article;
+}
+const Article = mongoose.model<IArticle>('Article', ArticleSchema);
 
 export default Article;

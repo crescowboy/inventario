@@ -1,5 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import dbConnect from "@/lib/mongodb";
 import Article from "@/models/Article";
 import Section from "@/models/Section";
@@ -9,7 +10,14 @@ export async function GET() {
   try {
     await dbConnect();
     const articles = await Article.find({}).populate('section', 'name').sort({ name: 1 });
-    return NextResponse.json(articles);
+    const serializedArticles = articles.map(article => ({
+      ...article.toObject(),
+      unitPrice: article.unitPrice ? parseFloat(article.unitPrice.toString()) : 0,
+      totalValue: article.totalValue ? parseFloat(article.totalValue.toString()) : 0,
+      detal: article.detal ? parseFloat(article.detal.toString()) : 0,
+      mayor: article.mayor ? parseFloat(article.mayor.toString()) : 0,
+    }));
+    return NextResponse.json(serializedArticles);
   } catch (error) {
     return NextResponse.json(
       { message: "Error al obtener el inventario." },
@@ -84,11 +92,11 @@ export async function POST(req: NextRequest) {
 
   // Manejo de creación de un solo artículo
   try {
-    const { name, code, brand, units, price, reference, description, section } = body;
+    const { name, code, brand, units, unitPrice, totalValue, detal, mayor, reference, description, section } = body;
 
-    if (!name || !code || units === undefined || price === undefined || !section) {
+    if (!name || !code || units === undefined || unitPrice === undefined || totalValue === undefined || !section) {
       return NextResponse.json(
-        { message: "Nombre, código, unidades, precio y sección son requeridos." },
+        { message: "Nombre, código, unidades, precio unitario, valor total y sección son requeridos." },
         { status: 400 }
       );
     }
@@ -121,7 +129,10 @@ export async function POST(req: NextRequest) {
       code,
       brand,
       units,
-      price,
+      unitPrice: new mongoose.Types.Decimal128(String(unitPrice)),
+      totalValue: new mongoose.Types.Decimal128(String(totalValue)),
+      detal: new mongoose.Types.Decimal128(String(detal)),
+      mayor: new mongoose.Types.Decimal128(String(mayor)),
       reference,
       description,
       section,
