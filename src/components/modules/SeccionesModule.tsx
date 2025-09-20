@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FolderOpen, Plus, Search, Edit, Trash2, Package, MoreHorizontal } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
-import { formatCurrency, Article } from "@/types/inventory";
+import { formatCurrency, Article, Section } from "@/types/inventory";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import ArticleForm from "./ArticleForm"; 
@@ -29,6 +29,10 @@ const SeccionesModule = () => {
   const [showNewSectionDialog, setShowNewSectionDialog] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false); 
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null); 
+
+  const [isDeleteSectionDialogOpen, setDeleteSectionDialogOpen] = useState(false);
+  const [sectionToDelete, setSectionToDelete] = useState<{id: string, name: string} | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { 
     sections, 
@@ -88,15 +92,26 @@ const SeccionesModule = () => {
   };
 
   const handleDeleteSection = (sectionId: string, sectionName: string) => {
-    if (window.confirm(`¿Estás seguro de eliminar la sección "${sectionName}"?`)) {
-      deleteSection(sectionId);
-      if (selectedSection === sectionId) {
-        setSelectedSection("");
+    setSectionToDelete({ id: sectionId, name: sectionName });
+    setDeleteSectionDialogOpen(true);
+  };
+
+  const confirmDeleteSection = async () => {
+    if (sectionToDelete) {
+      setIsDeleting(true);
+      try {
+        await deleteSection(sectionToDelete.id);
+        if (selectedSection === sectionToDelete.id) {
+          setSelectedSection("");
+        }
+        setDeleteSectionDialogOpen(false);
+        setSectionToDelete(null);
+      } catch (error) {
+        // El hook useInventory ya muestra un toast en caso de error
+        console.error("Failed to delete section:", error);
+      } finally {
+        setIsDeleting(false);
       }
-      toast({
-        title: "Sección eliminada",
-        description: `La sección "${sectionName}" ha sido eliminada`,
-      });
     }
   };
 
@@ -305,7 +320,7 @@ const SeccionesModule = () => {
                             <TableHead className="text-right">Unidades</TableHead>
                             <TableHead className="text-right">Precio Unidad</TableHead>
                             <TableHead>Referencia</TableHead>
-                            
+                            <TableHead className="text-right">Acciones</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -331,7 +346,26 @@ const SeccionesModule = () => {
                               <TableCell className="text-muted-foreground">
                                 {article.reference || '-'}
                               </TableCell>
-                              
+                              <TableCell className="text-right">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                      <span className="sr-only">Abrir menú</span>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditArticle(article)}>
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDeleteArticle(article.id, article.name)} className="text-destructive focus:text-destructive">
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Eliminar
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -352,6 +386,25 @@ const SeccionesModule = () => {
         initialData={selectedArticle} 
         sections={sections}
       />
+
+      <Dialog open={isDeleteSectionDialogOpen} onOpenChange={setDeleteSectionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar la sección "{sectionToDelete?.name}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteSectionDialogOpen(false)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteSection} disabled={isDeleting}>
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
