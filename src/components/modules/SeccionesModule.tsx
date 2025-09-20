@@ -32,6 +32,8 @@ const SeccionesModule = () => {
 
   const [isDeleteSectionDialogOpen, setDeleteSectionDialogOpen] = useState(false);
   const [sectionToDelete, setSectionToDelete] = useState<{id: string, name: string} | null>(null);
+  const [isDeleteArticleDialogOpen, setDeleteArticleDialogOpen] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -121,13 +123,23 @@ const SeccionesModule = () => {
     }
   };
 
-  const handleDeleteArticle = async (articleId: string, articleName: string) => {
-    if (confirm(`¿Estás seguro de que quieres eliminar el artículo "${articleName}"?`)) {
+  const handleDeleteArticle = (article: Article) => {
+    setArticleToDelete(article);
+    setDeleteArticleDialogOpen(true);
+  };
+
+  const confirmDeleteArticle = async () => {
+    if (articleToDelete) {
+      setIsDeleting(true);
       try {
-        await deleteArticle(articleId);
+        await deleteArticle(articleToDelete.id);
         toast({ title: "Artículo eliminado", description: "El artículo ha sido eliminado correctamente." });
+        setDeleteArticleDialogOpen(false);
+        setArticleToDelete(null);
       } catch (error: any) {
         toast({ title: "Error al eliminar", description: error.message, variant: "destructive" });
+      } finally {
+        setIsDeleting(false);
       }
     }
   };
@@ -361,25 +373,16 @@ const SeccionesModule = () => {
                                 {article.reference || '-'}
                               </TableCell>
                               <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                      <span className="sr-only">Abrir menú</span>
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditArticle(article)}>
-                                      <Edit className="mr-2 h-4 w-4" />
-                                      Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDeleteArticle(article.id, article.name)} className="text-destructive focus:text-destructive">
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Eliminar
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteArticle(article)}
+                                  className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
                               </TableCell>
+                              
                             </TableRow>
                           ))}
                         </TableBody>
@@ -401,6 +404,25 @@ const SeccionesModule = () => {
         sections={sections}
         isSubmitting={isSubmittingArticle}
       />
+
+      <Dialog open={isDeleteArticleDialogOpen} onOpenChange={setDeleteArticleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación de "{articleToDelete?.name}"</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar el artículo "{articleToDelete?.name}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteArticleDialogOpen(false)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteArticle} disabled={isDeleting}>
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isDeleteSectionDialogOpen} onOpenChange={setDeleteSectionDialogOpen}>
         <DialogContent>

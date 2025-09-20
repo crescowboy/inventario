@@ -16,6 +16,7 @@ import ArticleForm from "./ArticleForm";
 const InventarioModule = () => {
   const { articles, sections, loading, error, addArticle, updateArticle, deleteArticle } = useInventory();
   const [isAddArticleOpen, setIsAddArticleOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [editForm, setEditForm] = useState<Article>({
@@ -38,6 +39,18 @@ const InventarioModule = () => {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleAddArticle = async (data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) => {
+    setIsSubmitting(true);
+    try {
+      await addArticle(data);
+      setIsAddArticleOpen(false);
+    } catch (error) {
+      // The error is already handled in the useInventory hook
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const startEdit = (article: Article) => {
     setEditingArticle(article);
@@ -148,8 +161,9 @@ const InventarioModule = () => {
        <ArticleForm
         isOpen={isAddArticleOpen}
         onOpenChange={setIsAddArticleOpen}
-        onSubmit={addArticle}
+        onSubmit={handleAddArticle}
         sections={sections}
+        isSubmitting={isSubmitting}
       />
       <div className="flex justify-between items-center gap-3">
         <div className="flex items-center gap-3">

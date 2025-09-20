@@ -10,11 +10,11 @@ import { Loader2 } from "lucide-react";
 interface ArticleFormProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmit: (data: any) => void; // No necesita ser una promesa aquí
+  onSubmit: (data: any) => void;
   initialData?: Article | null;
   sections: { id: string; name: string }[];
   defaultSectionId?: string;
-  isSubmitting?: boolean; // Prop para controlar el estado de carga
+  isSubmitting?: boolean;
 }
 
 const ArticleForm = ({
@@ -39,6 +39,7 @@ const ArticleForm = ({
     description: '',
     section: '',
   });
+  const [errors, setErrors] = useState<Partial<typeof formData>>({});
 
   const isEditMode = !!initialData;
 
@@ -73,6 +74,7 @@ const ArticleForm = ({
           section: defaultSectionId || '',
         });
       }
+      setErrors({});
     }
   }, [initialData, isEditMode, isOpen, defaultSectionId]);
 
@@ -91,8 +93,21 @@ const ArticleForm = ({
     setFormData(prev => ({ ...prev, section: value }));
   };
 
+  const validate = () => {
+    const newErrors: Partial<typeof formData> = {};
+    if (!formData.name) newErrors.name = 'El nombre es obligatorio.';
+    if (!formData.code) newErrors.code = 'El código es obligatorio.';
+    if (!formData.section) newErrors.section = 'La sección es obligatoria.';
+    return newErrors;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors = validate();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
     const dataToSubmit = {
       ...formData,
       unitPrice: parseFloat(String(formData.unitPrice).replace(',', '.')) || 0,
@@ -116,11 +131,13 @@ const ArticleForm = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="code">Código</Label>
-              <Input id="code" name="code" value={formData.code} onChange={handleChange} required />
+              <Input id="code" name="code" value={formData.code} onChange={handleChange} />
+              {errors.code && <p className="text-red-500 text-xs">{errors.code}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">Nombre del Artículo</Label>
-              <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+              <Input id="name" name="name" value={formData.name} onChange={handleChange} />
+              {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -151,35 +168,36 @@ const ArticleForm = ({
                 ))}
               </SelectContent>
             </Select>
+            {errors.section && <p className="text-red-500 text-xs">{errors.section}</p>}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="units">Unidades</Label>
-              <Input id="units" name="units" type="number" value={formData.units} onChange={handleChange} required />
+              <Input id="units" name="units" type="number" value={formData.units} onChange={handleChange} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="unitPrice">Unit Price</Label>
-              <Input id="unitPrice" name="unitPrice" type="text" inputMode="decimal" value={String(formData.unitPrice)} onChange={handleChange} required />
+              <Input id="unitPrice" name="unitPrice" type="text" inputMode="decimal" value={String(formData.unitPrice)} onChange={handleChange} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="totalValue">Total Value</Label>
-              <Input id="totalValue" name="totalValue" type="text" inputMode="decimal" value={String(formData.totalValue)} onChange={handleChange} required />
+              <Input id="totalValue" name="totalValue" type="text" inputMode="decimal" value={String(formData.totalValue)} onChange={handleChange} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="detal">Precio Detal</Label>
-              <Input id="detal" name="detal" type="text" inputMode="decimal" value={String(formData.detal)} onChange={handleChange} required />
+              <Input id="detal" name="detal" type="text" inputMode="decimal" value={String(formData.detal)} onChange={handleChange} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="mayor">Precio Mayor</Label>
-              <Input id="mayor" name="mayor" type="text" inputMode="decimal" value={String(formData.mayor)} onChange={handleChange} required />
+              <Input id="mayor" name="mayor" type="text" inputMode="decimal" value={String(formData.mayor)} onChange={handleChange} />
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+              {isSubmitting ? (isEditMode ? 'Guardando...' : 'Creando...') : (isEditMode ? 'Guardar Cambios' : 'Crear Artículo')}
             </Button>
           </DialogFooter>
         </form>
