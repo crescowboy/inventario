@@ -153,15 +153,33 @@ const JefeModule = () => {
     });
   };
 
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleDelete = (article: Article) => {
-    if (window.confirm(`¿Estás seguro de eliminar "${article.name}"?`)) {
-      deleteArticle(article.id);
-      toast.success(
-        <>
-          <div className="font-bold">Artículo eliminado</div>
-          <div>{article.name} ha sido eliminado del inventario</div>
-        </>
-      );
+    setArticleToDelete(article);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (articleToDelete) {
+      setIsDeleting(true);
+      try {
+        await deleteArticle(articleToDelete.id);
+        toast.success(
+          <>
+            <div className="font-bold">Artículo eliminado</div>
+            <div>{articleToDelete.name} ha sido eliminado del inventario</div>
+          </>
+        );
+        setDeleteDialogOpen(false);
+        setArticleToDelete(null);
+      } catch (error) {
+        toast.error("Error al eliminar el artículo.");
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -383,6 +401,25 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,51-163,Herramientas Manuales
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres eliminar el artículo "{articleToDelete?.name}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
