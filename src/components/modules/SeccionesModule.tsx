@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FolderOpen, Plus, Search, Edit, Trash2, Package, MoreHorizontal } from "lucide-react";
+import { FolderOpen, Plus, Search, Edit, Trash2, Package, MoreHorizontal, Loader2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 import { formatCurrency, Article, Section } from "@/types/inventory";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +33,9 @@ const SeccionesModule = () => {
   const [isDeleteSectionDialogOpen, setDeleteSectionDialogOpen] = useState(false);
   const [sectionToDelete, setSectionToDelete] = useState<{id: string, name: string} | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const [isSubmittingArticle, setIsSubmittingArticle] = useState(false);
 
   const { 
     sections, 
@@ -56,7 +59,7 @@ const SeccionesModule = () => {
     ? searchArticles(searchQuery, selectedSection) 
     : sectionArticles;
 
-  const handleCreateSection = () => {
+  const handleCreateSection = async () => {
     if (!newSectionName.trim()) {
       toast({
         title: "Error",
@@ -66,19 +69,22 @@ const SeccionesModule = () => {
       return;
     }
 
-    addSection({
-      name: newSectionName,
-      description: newSectionDescription,
-    });
+    setIsCreating(true);
+    try {
+      await addSection({
+        name: newSectionName,
+        description: newSectionDescription,
+      });
 
-    toast({
-      title: "Sección creada",
-      description: `La sección "${newSectionName}" ha sido creada exitosamente`,
-    });
-
-    setNewSectionName("");
-    setNewSectionDescription("");
-    setShowNewSectionDialog(false);
+      setNewSectionName("");
+      setNewSectionDescription("");
+      setShowNewSectionDialog(false);
+    } catch (error) {
+      // El hook ya se encarga del toast de error
+      console.error("Failed to create section:", error);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleAddNewArticle = () => {
@@ -127,14 +133,21 @@ const SeccionesModule = () => {
   };
 
   const handleFormSubmit = async (data: any) => {
-    if (selectedArticle) {
-      // Es una edición
-      await updateArticle(selectedArticle.id, data);
-      toast({ title: "Artículo actualizado", description: "El artículo ha sido actualizado correctamente." });
-    } else {
-      // Es una creación
-      await addArticle({ ...data, section: selectedSection });
-      toast({ title: "Artículo agregado", description: "El artículo ha sido agregado correctamente." });
+    setIsSubmittingArticle(true);
+    try {
+      if (selectedArticle) {
+        // Es una edición
+        await updateArticle(selectedArticle.id, data);
+      } else {
+        // Es una creación
+        await addArticle({ ...data, section: selectedSection });
+      }
+      setIsFormOpen(false); // Cierra el formulario si tiene éxito
+    } catch (error) {
+      // El hook ya maneja el toast de error
+      console.error("Failed to submit article:", error);
+    } finally {
+      setIsSubmittingArticle(false);
     }
   };
 
@@ -189,8 +202,9 @@ const SeccionesModule = () => {
                         onChange={(e) => setNewSectionDescription(e.target.value)}
                       />
                     </div>
-                    <Button onClick={handleCreateSection} className="w-full">
-                      Crear Sección
+                    <Button onClick={handleCreateSection} className="w-full" disabled={isCreating}>
+                      {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isCreating ? "Creando..." : "Crear Sección"}
                     </Button>
                   </div>
                 </DialogContent>
@@ -385,6 +399,7 @@ const SeccionesModule = () => {
         onSubmit={handleFormSubmit} 
         initialData={selectedArticle} 
         sections={sections}
+        isSubmitting={isSubmittingArticle}
       />
 
       <Dialog open={isDeleteSectionDialogOpen} onOpenChange={setDeleteSectionDialogOpen}>

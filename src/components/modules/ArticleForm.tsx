@@ -5,18 +5,27 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { Article } from "@/types/inventory";
-import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface ArticleFormProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmit: (data: any) => Promise<any>;
+  onSubmit: (data: any) => void; // No necesita ser una promesa aquí
   initialData?: Article | null;
-  sections: { id: string; name: string }[]; // Añadir prop para las secciones
-  defaultSectionId?: string; // Nueva prop para la sección por defecto
+  sections: { id: string; name: string }[];
+  defaultSectionId?: string;
+  isSubmitting?: boolean; // Prop para controlar el estado de carga
 }
 
-const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [], defaultSectionId }: ArticleFormProps) => {
+const ArticleForm = ({
+  isOpen,
+  onOpenChange,
+  onSubmit,
+  initialData,
+  sections = [],
+  defaultSectionId,
+  isSubmitting
+}: ArticleFormProps) => {
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -30,41 +39,40 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
     description: '',
     section: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
 
   const isEditMode = !!initialData;
 
   useEffect(() => {
-    if (isEditMode && initialData) {
-      setFormData({
-        code: initialData.code || '',
-        name: initialData.name || '',
-        brand: initialData.brand || '',
-        units: initialData.units || 0,
-        unitPrice: initialData.unitPrice || 0,
-        totalValue: initialData.totalValue || 0,
-        detal: initialData.detal || 0,
-        mayor: initialData.mayor || 0,
-        reference: initialData.reference || '',
-        description: initialData.description || '',
-        section: initialData.section || '',
-      });
-    } else {
-      // Reset form for new article, setting defaultSectionId if provided
-      setFormData({
-        code: '',
-        name: '',
-        brand: '',
-        units: 0,
-        unitPrice: 0,
-        totalValue: 0,
-        detal: 0,
-        mayor: 0,
-        reference: '',
-        description: '',
-        section: defaultSectionId || '',
-      });
+    if (isOpen) {
+      if (isEditMode && initialData) {
+        setFormData({
+          code: initialData.code || '',
+          name: initialData.name || '',
+          brand: initialData.brand || '',
+          units: initialData.units || 0,
+          unitPrice: initialData.unitPrice || 0,
+          totalValue: initialData.totalValue || 0,
+          detal: initialData.detal || 0,
+          mayor: initialData.mayor || 0,
+          reference: initialData.reference || '',
+          description: initialData.description || '',
+          section: initialData.section || '',
+        });
+      } else {
+        setFormData({
+          code: '',
+          name: '',
+          brand: '',
+          units: 0,
+          unitPrice: 0,
+          totalValue: 0,
+          detal: 0,
+          mayor: 0,
+          reference: '',
+          description: '',
+          section: defaultSectionId || '',
+        });
+      }
     }
   }, [initialData, isEditMode, isOpen, defaultSectionId]);
 
@@ -83,10 +91,8 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
     setFormData(prev => ({ ...prev, section: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
     const dataToSubmit = {
       ...formData,
       unitPrice: parseFloat(String(formData.unitPrice).replace(',', '.')) || 0,
@@ -94,27 +100,7 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
       detal: parseFloat(String(formData.detal).replace(',', '.')) || 0,
       mayor: parseFloat(String(formData.mayor).replace(',', '.')) || 0,
     };
-
-    try {
-      if (isEditMode && initialData) {
-        await onSubmit({ ...dataToSubmit, id: initialData.id });
-      } else {
-        await onSubmit(dataToSubmit);
-      }
-      toast({
-        title: `Artículo ${isEditMode ? 'actualizado' : 'creado'}`,
-        description: `El artículo "${formData.name}" se ha guardado correctamente.`,
-      });
-      onOpenChange(false);
-    } catch (error: any) {
-      toast({
-        title: "Error al guardar",
-        description: error.message || "Ocurrió un problema al guardar el artículo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit(dataToSubmit);
   };
 
   return (
@@ -192,6 +178,7 @@ const ArticleForm = ({ isOpen, onOpenChange, onSubmit, initialData, sections = [
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
           </DialogFooter>
