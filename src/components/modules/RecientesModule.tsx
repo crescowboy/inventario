@@ -1,10 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, Edit, Trash2, Calendar } from "lucide-react";
+import { Clock, Plus, Edit, Trash2, Calendar, Loader2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 
 const RecientesModule = () => {
-  const { recentActivities } = useInventory();
+  const { recentActivities, loading } = useInventory();
+
+  if (loading) {
+    return <div className="flex items-center justify-center w-full min-h-screen"><Loader2 className="w-8 h-8 animate-spin text-primary" /><p className="ml-4 text-muted-foreground">Cargando actividades recientes...</p></div>;
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

@@ -47,7 +47,8 @@ const SeccionesModule = () => {
     addArticle, 
     updateArticle, 
     deleteArticle, 
-    searchArticles 
+    searchArticles, 
+    loading
   } = useInventory();
   
   const { toast } = useToast();
@@ -60,6 +61,10 @@ const SeccionesModule = () => {
   const searchResults = searchQuery.trim() && selectedSection 
     ? searchArticles(searchQuery, selectedSection) 
     : sectionArticles;
+
+  if (loading) {
+    return <div className="flex items-center justify-center w-full min-h-screen"><Loader2 className="w-8 h-8 animate-spin text-primary" /><p className="ml-4 text-muted-foreground">Cargando secciones...</p></div>;
+  }
 
   const handleCreateSection = async () => {
     if (!newSectionName.trim()) {

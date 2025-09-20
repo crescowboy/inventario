@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Crown, Upload, Edit, Trash2, Plus, Save, X } from "lucide-react";
+import { Crown, Upload, Edit, Trash2, Plus, Save, X, Loader2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 import { formatCurrency, Article } from "@/types/inventory";
 import { toast } from "sonner"; // o desde tu wrapper de shadcn/ui
@@ -25,10 +25,23 @@ const JefeModule = () => {
     detal: 0,
     mayor: 0,
     reference: "",
-    section: "", // <-- agrega aquí
+    section: "",
   });
 
-  const { articles, updateArticle, deleteArticle, refetch } = useInventory();
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const { articles, updateArticle, deleteArticle, refetch, loading: inventoryLoading } = useInventory();
+
+  if (inventoryLoading) {
+    return (
+      <div className="flex items-center justify-center w-full min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="ml-4 text-muted-foreground">Cargando módulo de jefe...</p>
+      </div>
+    );
+  }
 
   const handleBulkUpload = async () => {
     if (!bulkData.trim()) {
@@ -161,10 +174,6 @@ const JefeModule = () => {
       section: "",
     });
   };
-
-  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = (article: Article) => {
     setArticleToDelete(article);
