@@ -152,7 +152,7 @@ const InventarioModule = () => {
   }
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center h-64 bg-destructive/10 rounded-lg"><AlertCircle className="w-8 h-8 text-destructive" /><p className="mt-4 text-destructive">Error al cargar el inventario</p><p className="text-sm text-muted-foreground">{error.message}</p></div>;
+    return <div className="flex flex-col items-center justify-center h-64 bg-destructive/10 rounded-lg"><AlertCircle className="w-8 h-8 text-destructive" /><p className="mt-4 text-destructive">Error al cargar el inventario</p><p className="text-sm text-muted-foreground">{error}</p></div>;
   }
 
   return (

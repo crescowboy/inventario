@@ -57,7 +57,7 @@ const RecientesModule = () => {
   const getActionVariant = (action: string) => {
     switch (action) {
       case 'created':
-        return 'success' as const;
+        return 'default' as const; 
       case 'updated':
         return 'warning' as const;
       case 'deleted':
@@ -125,13 +125,13 @@ const RecientesModule = () => {
                   <Calendar className="w-5 h-5" />
                   {formatGroupDate(dateString)}
                   <Badge variant="secondary" className="ml-auto">
-                    {activities.length} actividades
+                    {(activities as typeof recentActivities).length} actividades
                   </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {activities.map((activity) => (
+                  {(activities as typeof recentActivities).map((activity) => (
                     <div
                       key={activity.id}
                       className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"

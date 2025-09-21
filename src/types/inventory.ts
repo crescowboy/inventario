@@ -12,6 +12,7 @@ export interface Article {
   section: string;
   createdAt: string;
   updatedAt: string;
+  description:string;
 }
 
 export interface Section {
