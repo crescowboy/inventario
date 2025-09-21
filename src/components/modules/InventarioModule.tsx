@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Package, TrendingUp, AlertCircle, Loader2, PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
 import { useState } from "react";
-import { Article } from "@/types/inventory";
+import { Article, formatCurrency } from "@/types/inventory";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -260,7 +260,7 @@ const InventarioModule = () => {
                               className="h-8 w-24 text-right"
                             />
                           ) : (
-                            `${(article.unitPrice ?? 0).toFixed(2)}`
+                            formatCurrency(article.unitPrice)
                           )}
                         </TableCell>
                         <TableCell className="text-right font-mono font-bold">
@@ -273,7 +273,7 @@ const InventarioModule = () => {
                               className="h-8 w-24 text-right"
                             />
                           ) : (
-                            `${(article.totalValue ?? 0).toFixed(2)}`
+                            formatCurrency(article.totalValue)
                           )}
                         </TableCell>
                         <TableCell className="text-right font-mono font-bold">
@@ -286,7 +286,7 @@ const InventarioModule = () => {
                               className="h-8 w-24 text-right"
                             />
                           ) : (
-                            `${(article.detal ?? 0).toFixed(2)}`
+                            formatCurrency(article.detal)
                           )}
                         </TableCell>
                         <TableCell className="text-right font-mono font-bold">
@@ -299,7 +299,7 @@ const InventarioModule = () => {
                               className="h-8 w-24 text-right"
                             />
                           ) : (
-                            `${(article.mayor ?? 0).toFixed(2)}`
+                            formatCurrency(article.mayor)
                           )}
                         </TableCell>
                         <TableCell><Badge variant={statusVariant}>{stockStatus}</Badge></TableCell>

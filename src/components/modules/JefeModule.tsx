@@ -347,7 +347,7 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,28.00,26.00,51-163,Herramientas Man
                           className="h-8 w-24"
                         />
                       ) : (
-                        <span className="font-mono">{(article.unitPrice ?? 0).toFixed(2)}</span>
+                        <span className="font-mono">{formatCurrency(article.unitPrice)}</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -359,7 +359,7 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,28.00,26.00,51-163,Herramientas Man
                           className="h-8 w-24"
                         />
                       ) : (
-                        <span className="font-mono">{(article.detal ?? 0).toFixed(2)}</span>
+                        <span className="font-mono">{formatCurrency(article.detal)}</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -371,7 +371,7 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,28.00,26.00,51-163,Herramientas Man
                           className="h-8 w-24"
                         />
                       ) : (
-                        <span className="font-mono">{(article.mayor ?? 0).toFixed(2)}</span>
+                        <span className="font-mono">{formatCurrency(article.mayor)}</span>
                       )}
                     </TableCell>
                     <TableCell>
