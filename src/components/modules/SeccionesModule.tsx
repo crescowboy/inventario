@@ -264,7 +264,7 @@ const SeccionesModule = () => {
                           e.stopPropagation();
                           handleDeleteSection(section.id, section.name);
                         }}
-                        className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                        className="h-6 w-6 p-0 hover:bg-destructive hover:text-white"
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
@@ -382,7 +382,7 @@ const SeccionesModule = () => {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleDeleteArticle(article)}
-                                  className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                                  className="h-8 w-8 p-0 hover:bg-destructive hover:text-white"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </Button>

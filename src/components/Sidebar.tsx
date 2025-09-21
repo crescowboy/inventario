@@ -142,7 +142,7 @@ const Sidebar = ({ currentModule, onModuleChange, onLogout, userRole, username }
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start hover:bg-destructive hover:text-destructive-foreground transition-all duration-200",
+              "w-full justify-start hover:bg-destructive hover:text-white transition-all duration-200",
               isCollapsed ? "px-2" : "px-4"
             )}
             onClick={onLogout}

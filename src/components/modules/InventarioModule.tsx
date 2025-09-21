@@ -46,7 +46,6 @@ const InventarioModule = () => {
       await addArticle(data);
       setIsAddArticleOpen(false);
     } catch (error) {
-      // The error is already handled in the useInventory hook
     } finally {
       setIsSubmitting(false);
     }
@@ -196,7 +195,7 @@ const InventarioModule = () => {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead className="text-right">Unit Price</TableHead><TableHead className="text-right">Total Value</TableHead><TableHead>Precio Detal</TableHead><TableHead>Precio Mayor</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Nombre</TableHead><TableHead>Sección</TableHead><TableHead className="text-right">Unidades</TableHead><TableHead className="text-right">Precio Unidad</TableHead><TableHead className="text-right">Total Value</TableHead><TableHead>Precio Detal</TableHead><TableHead>Precio Mayor</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Acciones</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {articles.map((article) => {
                     const stockStatus = article.units === 0 ? 'Sin Stock' : article.units <= 10 ? 'Stock Bajo' : 'Disponible';
@@ -338,7 +337,7 @@ const InventarioModule = () => {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => handleDelete(article)}
-                                  className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                                  className="h-8 w-8 p-0 hover:bg-destructive hover:text-white"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </Button>
