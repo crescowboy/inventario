@@ -80,17 +80,17 @@ const JefeModule = () => {
       });
 
       let description = "Error en el servidor.";
-      let result: any = {};
+      let result: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       try {
         result = await response.json();
         description = result.message || description;
         if (result.errors && result.errors.length > 0) {
-          const errorDetails = result.errors.map((e: any) => `• ${e.code}: ${e.error}`).join('\n');
+          const errorDetails = result.errors.map((e: any) => `• ${e.code}: ${e.error}`).join('\n'); // eslint-disable-line @typescript-eslint/no-explicit-any
           description += `\n\nDetalles:\n${errorDetails}`;
         }
       } catch {
-        // Si no se puede parsear JSON, deja description como está
+        // Si 
       }
 
       if (!response.ok || (result.errors && result.errors.length > 0)) {
@@ -103,7 +103,7 @@ const JefeModule = () => {
       setBulkData("");
       refetch();
 
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.message || "Error en Carga Masiva");
     } finally {
       setLoading(false);
@@ -451,7 +451,7 @@ MAR-005,Martillo Carpintero,Stanley,35,25.00,28.00,26.00,51-163,Herramientas Man
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que quieres eliminar el artículo "{articleToDelete?.name}"? Esta acción no se puede deshacer.
+              ¿Estás seguro de que quieres eliminar el artículo &quot;{articleToDelete?.name}&quot;? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">

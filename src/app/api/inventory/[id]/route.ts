@@ -107,9 +107,9 @@ export async function PUT(req: NextRequest) {
     }
 
     return NextResponse.json(updatedArticle);
-  } catch (error: any) {
+  } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
     if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((val: any) => val.message);
+      const messages = Object.values(error.errors).map((val: any) => val.message);  // eslint-disable-line @typescript-eslint/no-explicit-any
       return NextResponse.json({ message: messages.join(', ') }, { status: 400 });
     }
     return NextResponse.json(

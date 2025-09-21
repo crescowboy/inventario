@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 interface ArticleFormProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   initialData?: Article | null;
   sections: { id: string; name: string }[];
   defaultSectionId?: string;

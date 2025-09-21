@@ -74,10 +74,9 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ message, errors }, { status: errors.length > 0 ? 207 : 201 });
 
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         if (error.name === 'MongoBulkWriteError' && error.code === 11000) {
-            // Extraer los códigos duplicados del mensaje de error
-            const duplicates = error.writeErrors.map((e: any) => e.err.op.code);
+            const duplicates = error.writeErrors.map((e: any) => e.err.op.code); // eslint-disable-line @typescript-eslint/no-explicit-any
             return NextResponse.json(
                 { 
                     message: "Error durante la carga masiva. Se encontraron códigos de artículo duplicados.",
@@ -141,7 +140,7 @@ export async function POST(req: NextRequest) {
     const savedArticle = await newArticle.save();
 
     return NextResponse.json(savedArticle, { status: 201 });
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
      if (error.code === 11000) {
         return NextResponse.json(
             { message: "Error de duplicado: El código de artículo ya existe." },

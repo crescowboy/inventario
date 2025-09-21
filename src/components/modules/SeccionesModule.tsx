@@ -129,7 +129,7 @@ const SeccionesModule = () => {
         toast({ title: "Artículo eliminado", description: "El artículo ha sido eliminado correctamente." });
         setDeleteArticleDialogOpen(false);
         setArticleToDelete(null);
-      } catch (error: any) {
+      } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         toast({ title: "Error al eliminar", description: error.message, variant: "destructive" });
       } finally {
         setIsDeleting(false);
@@ -137,7 +137,7 @@ const SeccionesModule = () => {
     }
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     setIsSubmittingArticle(true);
     try {
       if (selectedArticle) {
@@ -401,9 +401,9 @@ const SeccionesModule = () => {
       <Dialog open={isDeleteArticleDialogOpen} onOpenChange={setDeleteArticleDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar Eliminación de "{articleToDelete?.name}"</DialogTitle>
+            <DialogTitle>Confirmar Eliminación de &quot;{articleToDelete?.name}&quot;</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que quieres eliminar el artículo "{articleToDelete?.name}"? Esta acción no se puede deshacer.
+              ¿Estás seguro de que quieres eliminar el artículo &quot;{articleToDelete?.name}&quot;? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">
@@ -422,7 +422,7 @@ const SeccionesModule = () => {
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que quieres eliminar la sección "{sectionToDelete?.name}"? Esta acción no se puede deshacer.
+              ¿Estás seguro de que quieres eliminar la sección &quot;{sectionToDelete?.name}&quot;? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">

@@ -126,7 +126,7 @@ const EmpleadoModule = () => {
               <h3 className="text-lg font-medium text-foreground mb-2">Comienza a buscar</h3>
               <p className="text-muted-foreground max-w-md mx-auto">
                 Ingresa el código, nombre, marca o referencia del artículo que estás buscando.
-                También puedes usar abreviaturas como "cb" para "cable".
+                También puedes usar abreviaturas como &quot;cb&quot; para &quot;cable&quot;.
               </p>
             </div>
           </CardContent>

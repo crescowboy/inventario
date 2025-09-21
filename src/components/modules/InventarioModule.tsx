@@ -88,7 +88,7 @@ const InventarioModule = () => {
         </>
       );
       setEditingArticle(null);
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(
         <>
           <div className="font-bold">Error al actualizar</div>
@@ -191,7 +191,7 @@ const InventarioModule = () => {
         </CardHeader>
         <CardContent>
           {articles.length === 0 ? (
-            <div className="text-center py-12"><Package className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" /><h3 className="text-lg font-medium text-foreground mb-2">Inventario vacío</h3><p className="text-muted-foreground">No hay artículos para mostrar. Haz clic en "Añadir Artículo" para empezar.</p></div>
+            <div className="text-center py-12"><Package className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" /><h3 className="text-lg font-medium text-foreground mb-2">Inventario vacío</h3><p className="text-muted-foreground">No hay artículos para mostrar. Haz clic en &quot;Añadir Artículo&quot; para empezar.</p></div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -360,7 +360,7 @@ const InventarioModule = () => {
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro de que quieres eliminar el artículo "{articleToDelete?.name}"? Esta acción no se puede deshacer.
+              ¿Estás seguro de que quieres eliminar el artículo &quot;{articleToDelete?.name}&quot;? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">

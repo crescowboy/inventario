@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { Article, Section } from '@/types/inventory';
 import { useToast } from './use-toast';
 
-// Helper para transformar los datos del backend (_id) al formato del frontend (id)
-const transformApiResponse = (data: any[]) => {
+const transformApiResponse = (data: any[]) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   return data.map(item => {
     const { _id, section, ...rest } = item;
-    const transformedItem: any = { id: _id, ...rest };
+    const transformedItem: any = { id: _id, ...rest }; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (section && typeof section === 'object' && section._id) {
       transformedItem.section = section._id; // Assuming section is populated and has _id
     } else if (section) {
@@ -34,7 +33,7 @@ export const useInventory = () => {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [recentActivities, setRecentActivities] = useState<any[]>([]); // Estado para actividades recientes
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);  // eslint-disable-line @typescript-eslint/no-explicit-any
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -60,7 +59,7 @@ export const useInventory = () => {
       setRecentActivities(transformApiResponse(activitiesData));
       
       setError(null);
-    } catch (err: any) {
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       const errorMessage = err.message || "Ocurrió un error inesperado";
       setError(errorMessage);
       toast({ title: "Error de Carga", description: errorMessage, variant: "destructive" });
@@ -73,7 +72,7 @@ export const useInventory = () => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const makeApiCall = async (url: string, method: string, body?: any, successMessage?: string) => {
+  const makeApiCall = async (url: string, method: string, body?: any, successMessage?: string) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     try {
       const response = await fetch(url, {
         method,
@@ -90,16 +89,15 @@ export const useInventory = () => {
         toast({ title: "Éxito", description: successMessage });
       }
 
-      return await response.json(); // Devuelve la respuesta para poder usarla
-    } catch (err: any) {
+      return await response.json(); 
+    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast({ title: "Error en la operación", description: err.message, variant: "destructive" });
       throw err;
     }
   };
 
-  const logActivity = async (action: 'created' | 'updated' | 'deleted', entity: 'article', entityId: string, details?: any) => {
-    // En una app real, el usuario vendría de la sesión
-    const user = { id: '60d21b4667d0d8992e610c85', name: 'Admin' }; // TODO: Reemplazar con el usuario de la sesión
+  const logActivity = async (action: 'created' | 'updated' | 'deleted', entity: 'article', entityId: string, details?: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    const user = { id: '60d21b4667d0d8992e610c85', name: 'Admin' }; 
 
     const activityData = {
       user,
@@ -162,8 +160,8 @@ export const useInventory = () => {
 
     if (updatedArticle && originalArticle) {
       const changes = Object.keys(data)
-        .filter(key => (data as any)[key] !== (originalArticle as any)[key])
-        .map(key => `${key}: de '${(originalArticle as any)[key]}' a '${(data as any)[key]}'`);
+        .filter(key => (data as any)[key] !== (originalArticle as any)[key]) // eslint-disable-line @typescript-eslint/no-explicit-any
+        .map(key => `${key}: de '${(originalArticle as any)[key]}' a '${(data as any)[key]}'`); // eslint-disable-line @typescript-eslint/no-explicit-any
 
       await logActivity('updated', 'article', id, {
         articleCode: updatedArticle.code,

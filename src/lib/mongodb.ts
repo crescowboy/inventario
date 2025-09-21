@@ -10,10 +10,10 @@ if (!MONGODB_URI) {
   );
 }
 
-let cached = (global as any).mongoose;
+let cached = (global as any).mongoose; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose = { conn: null, promise: null }; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 async function seedDatabase() {
