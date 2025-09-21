@@ -180,9 +180,9 @@ const InventarioModule = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="shadow-sm"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Total de Artículos</p><p className="text-2xl font-bold text-foreground">{articles.length}</p></div><div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg"><Package className="w-6 h-6 text-primary" /></div></div></CardContent></Card>
-        <Card className="shadow-sm"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Total Unidades</p><p className="text-2xl font-bold text-foreground">{totalItems.toLocaleString()}</p></div><div className="flex items-center justify-center w-12 h-12 bg-secondary/10 rounded-lg"><TrendingUp className="w-6 h-6 text-secondary" /></div></div></CardContent></Card>
-        <Card className="shadow-sm"><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-muted-foreground">Artículos con Stock Bajo</p><p className="text-2xl font-bold text-warning">{lowStockItems}</p></div><div className="flex items-center justify-center w-12 h-12 bg-warning/10 rounded-lg"><AlertCircle className="w-6 h-6 text-warning" /></div></div></CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="h-full flex items-center"><div className="flex items-center justify-between w-full"><div><p className="text-sm font-medium text-muted-foreground">Total de Artículos</p><p className="text-2xl font-bold text-foreground">{articles.length}</p></div><div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg"><Package className="w-6 h-6 text-primary" /></div></div></CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="h-full flex items-center"><div className="flex items-center justify-between w-full"><div><p className="text-sm font-medium text-muted-foreground">Total Unidades</p><p className="text-2xl font-bold text-foreground">{totalItems.toLocaleString()}</p></div><div className="flex items-center justify-center w-12 h-12 bg-secondary/10 rounded-lg"><TrendingUp className="w-6 h-6 text-secondary" /></div></div></CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="h-full flex items-center"><div className="flex items-center justify-between w-full"><div><p className="text-sm font-medium text-muted-foreground">Artículos con Stock Bajo</p><p className="text-2xl font-bold text-yellow-500">{lowStockItems}</p></div><div className="flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg"><AlertCircle className="w-6 h-6 text-yellow-500" /></div></div></CardContent></Card>
       </div>
 
       <Card className="shadow-sm">
@@ -236,7 +236,7 @@ const InventarioModule = () => {
                             <Badge variant="outline">{sections.find(s => s.id === article.section)?.name || 'N/A'}</Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right font-mono font-bold">
+                        <TableCell className="text-right">
                           {editingArticle?.id === article.id ? (
                             <Input
                               type="number"
@@ -245,7 +245,9 @@ const InventarioModule = () => {
                               className="h-8 w-20"
                             />
                           ) : (
-                            article.units
+                            <Badge variant={statusVariant} className="font-mono font-bold">
+                              {article.units}
+                            </Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-right font-mono font-bold">
