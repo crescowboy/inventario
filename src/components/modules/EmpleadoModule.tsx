@@ -78,7 +78,7 @@ const EmpleadoModule = () => {
                       <TableHead>Nombre</TableHead>
                       <TableHead>Marca</TableHead>
                       <TableHead className="text-right">Unidades</TableHead>
-                      <TableHead className="text-right">Precio</TableHead>
+                      <TableHead className="text-right">Precio Unidad</TableHead>
                       <TableHead>Referencia</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -103,7 +103,7 @@ const EmpleadoModule = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right font-mono font-medium">
-                          {formatCurrency(article.price)}
+                          {formatCurrency(article.unitPrice)}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {article.reference || '-'}

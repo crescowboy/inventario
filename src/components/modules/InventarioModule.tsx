@@ -149,7 +149,7 @@ const InventarioModule = () => {
   const lowStockItems = articles.filter(article => article.units <= 10).length;
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /><p className="ml-4 text-muted-foreground">Cargando inventario...</p></div>;
+    return <div className="flex items-center justify-center h-[calc(100vh-200px)]"><Loader2 className="w-8 h-8 animate-spin text-primary" /><p className="ml-4 text-muted-foreground">Cargando inventario...</p></div>;
   }
 
   if (error) {
