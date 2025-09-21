@@ -7,7 +7,7 @@ export async function GET() {
     await dbConnect();
     const sections = await Section.find({}).sort({ name: 1 });
     return NextResponse.json(sections);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al obtener las secciones." },
       { status: 500 }

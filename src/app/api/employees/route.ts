@@ -9,7 +9,7 @@ export async function GET() {
     await dbConnect();
     const employees = await Employee.find({}).populate('section', 'name').sort({ name: 1 });
     return NextResponse.json(employees);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al obtener los empleados." },
       { status: 500 }
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const savedEmployee = await newEmployee.save();
 
     return NextResponse.json(savedEmployee, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al crear el empleado." },
       { status: 500 }

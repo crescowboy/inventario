@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Plus, Edit, Trash2, Calendar, Loader2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";

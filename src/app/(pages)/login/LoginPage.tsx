@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Package, Shield } from "lucide-react";
 import { useState } from "react";
 
@@ -23,7 +23,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,18 +45,20 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
         
         onLogin(userData);
       } else {
-        toast({
-          title: "Error de acceso",
-          description: data.message || "Credenciales incorrectas.",
-          variant: "destructive",
-        });
+        toast.error(
+          <>
+            <div className="font-bold">Error de acceso</div>
+            <div>{data.message || "Credenciales incorrectas."}</div>
+          </>
+        );
       }
-    } catch (error) {
-      toast({
-        title: "Error de red",
-        description: "No se pudo conectar con el servidor. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
+    } catch {
+      toast.error(
+        <>
+          <div className="font-bold">Error de red</div>
+          <div>No se pudo conectar con el servidor. Inténtalo de nuevo.</div>
+        </>
+      );
     } finally {
       setLoading(false);
     }

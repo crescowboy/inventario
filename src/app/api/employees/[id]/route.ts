@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json(employee);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al obtener el empleado." },
       { status: 500 }
@@ -78,7 +78,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json(updatedEmployee);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al actualizar el empleado." },
       { status: 500 }
@@ -102,7 +102,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json({ message: "Empleado eliminado exitosamente." });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al eliminar el empleado." },
       { status: 500 }

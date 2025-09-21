@@ -45,7 +45,7 @@ const InventarioModule = () => {
     try {
       await addArticle(data);
       setIsAddArticleOpen(false);
-    } catch (error) {
+    } catch {
     } finally {
       setIsSubmitting(false);
     }
@@ -136,7 +136,7 @@ const InventarioModule = () => {
         );
         setDeleteDialogOpen(false);
         setArticleToDelete(null);
-      } catch (error) {
+      } catch {
         toast.error("Error al eliminar el artículo.");
       } finally {
         setIsDeleting(false);

@@ -67,11 +67,11 @@ export const useInventory = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]); // `loading` no es necesaria como dependencia aquí
-
+  }, [toast]); // eslint-disable-line react-hooks/exhaustive-deps
+  
   useEffect(() => {
     fetchData();
-  }, []); // Solo se ejecuta una vez al montar el hook
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const makeApiCall = async (url: string, method: string, body?: any, successMessage?: string) => {
     try {

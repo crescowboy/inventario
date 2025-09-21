@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(article);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al obtener el artículo." },
       { status: 500 }
@@ -135,7 +135,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     return NextResponse.json({ message: "Artículo eliminado exitosamente." });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al eliminar el artículo." },
       { status: 500 }

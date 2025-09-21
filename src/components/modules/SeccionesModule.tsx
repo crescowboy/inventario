@@ -7,19 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FolderOpen, Plus, Search, Edit, Trash2, Package, MoreHorizontal, Loader2 } from "lucide-react";
+import { FolderOpen, Plus, Search, Trash2, Package, Loader2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
-import { formatCurrency, Article, Section } from "@/types/inventory";
+import { formatCurrency, Article, } from "@/types/inventory";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import ArticleForm from "./ArticleForm"; 
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
 const SeccionesModule = () => {
   const [selectedSection, setSelectedSection] = useState<string>("");
@@ -96,11 +89,6 @@ const SeccionesModule = () => {
 
   const handleAddNewArticle = () => {
     setSelectedArticle(null);
-    setIsFormOpen(true);
-  };
-
-  const handleEditArticle = (article: Article) => {
-    setSelectedArticle(article);
     setIsFormOpen(true);
   };
 

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, models } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IArticle extends Document {
   code: string;

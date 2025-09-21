@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Crown, Upload, Edit, Trash2, Plus, Save, X, Loader2 } from "lucide-react";
 import { useInventory } from "@/hooks/useInventory";
@@ -89,7 +89,7 @@ const JefeModule = () => {
           const errorDetails = result.errors.map((e: any) => `• ${e.code}: ${e.error}`).join('\n');
           description += `\n\nDetalles:\n${errorDetails}`;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, deja description como está
       }
 
@@ -193,7 +193,7 @@ const JefeModule = () => {
         );
         setDeleteDialogOpen(false);
         setArticleToDelete(null);
-      } catch (error) {
+      } catch {
         toast.error("Error al eliminar el artículo.");
       } finally {
         setIsDeleting(false);

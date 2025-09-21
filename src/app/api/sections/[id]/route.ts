@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json(section);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al obtener la sección." },
       { status: 500 }
@@ -92,7 +92,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json({ message: "Sección eliminada exitosamente." });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al eliminar la sección." },
       { status: 500 }

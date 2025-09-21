@@ -18,7 +18,7 @@ export async function GET() {
       mayor: article.mayor ? parseFloat(article.mayor.toString()) : 0,
     }));
     return NextResponse.json(serializedArticles);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Error al obtener el inventario." },
       { status: 500 }
